@@ -1,0 +1,172 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+:root {
+  /* =========================================================================
+     LIGHT MODE (Luxury Royal Collegiate: Ivory, Oceanic Ink, Medallion Gold)
+     ========================================================================= */
+  --bg-main: #F4F7FB;           /* Serene luxury ivory-silver foundation */
+  --bg-secondary: #E9F0F8;      /* Soft architectural container */
+  --bg-surface: #FFFFFF;        /* Pure crisp card surface */
+  --bg-elevated: #F8FAFD;       /* Raised layer */
+  
+  /* Text roles (High-contrast, deep oceanic ink) */
+  --text-primary: #0A142F;      /* Deepest Royal Ink #0A142F */
+  --text-secondary: #334E68;    /* Refined Slate #334E68 */
+  --text-muted: #627D98;        /* Subtle Label Steel #627D98 */
+  
+  /* Brand Accents (Rich Royal Palette) */
+  --accent-primary: #0077B6;    /* Royal Ocean Blue #0077B6 */
+  --accent-hover: #023E8A;
+  --accent-cyan: #0096C7;       /* Luminous Cerulean */
+  --accent-soft: #E0F2FE;
+  --accent-gold: #C59B27;       /* Medallion Imperial Gold */
+  --accent-gold-glow: rgba(197, 155, 39, 0.22);
+  --accent-violet: #5E60CE;     /* Deep Indigo Violet */
+  --accent-fuchsia: #D81B60;    /* Crimson Rose */
+  --accent-blue: #2563EB;
+  --accent-mint: #059669;       /* Deep Jade Mint */
+  
+  /* Borders & Shadows (Subtle, Layered & Crisp) */
+  --border-main: #D9E2EC;       /* Crisp hairline border */
+  --border-subtle: #E8F0F8;
+  --border-glow: rgba(0, 119, 182, 0.18);
+  --card-shadow: 0 4px 20px -2px rgba(10, 20, 47, 0.06), 0 1px 3px rgba(10, 20, 47, 0.04);
+
+  color-scheme: light;
+}
+
+.dark {
+  /* =========================================================================
+     DARK MODE (EmberAI Obsidian + Airavata Medallion Jewel Glows)
+     ========================================================================= */
+  --bg-main: #060911;           /* Deep Obsidian Space */
+  --bg-secondary: #0B1120;      /* Deep Matte Steel */
+  --bg-surface: #10182E;        /* High-contrast Matte Card */
+  --bg-elevated: #16223F;       /* Elevated layer */
+  
+  /* Luminous Text */
+  --text-primary: #F8F9FA;      /* Crisp Luminous White */
+  --text-secondary: #94A3B8;    /* Sophisticated Silver Slate */
+  --text-muted: #5B6A82;        /* Steel Label */
+  
+  /* Glowing Cyber-Jewel Accents */
+  --accent-primary: #00B4D8;    /* Luminous Ocean Cyan */
+  --accent-hover: #48CAE4;
+  --accent-cyan: #4CC9F0;       /* Neon Cyan */
+  --accent-soft: #0C1E3A;
+  --accent-gold: #E5C378;       /* Medallion Gold #E5C378 */
+  --accent-gold-glow: rgba(229, 195, 120, 0.35);
+  --accent-violet: #7209B7;     /* Purple Raindrops #7209B7 */
+  --accent-fuchsia: #F72585;    /* Electric Magenta #F72585 */
+  --accent-blue: #4361EE;       /* Electric Royal Blue #4361EE */
+  --accent-mint: #80FFDB;       /* Electric Mint #80FFDB */
+  
+  /* Hairline Borders & Ambient Depth */
+  --border-main: rgba(255, 255, 255, 0.09);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-glow: rgba(0, 180, 216, 0.35);
+  --card-shadow: 0 16px 48px -4px rgba(0, 0, 0, 0.85);
+
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Classes */
+.font-display {
+  font-family: 'Cinzel', 'Cinzel Decorative', Georgia, serif;
+  letter-spacing: 0.05em;
+}
+
+.font-serif {
+  font-family: 'Cinzel', 'Cinzel Decorative', Georgia, serif;
+  letter-spacing: 0.03em;
+}
+
+.font-sans {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Metallic Shimmer Gradient Headers */
+.dark .text-gold-gradient {
+  background: linear-gradient(135deg, #FFF3D1 0%, #E5C378 45%, #C59B27 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.light .text-gold-gradient {
+  background: linear-gradient(135deg, #8A6400 0%, #B8860B 45%, #594100 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .text-cyan-gradient {
+  background: linear-gradient(135deg, #FFFFFF 0%, #90E0EF 45%, #00B4D8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.light .text-cyan-gradient {
+  background: linear-gradient(135deg, #0077B6 0%, #023E8A 50%, #03045E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Subtle Card Glows */
+.ember-glow-gold {
+  box-shadow: 0 0 40px -6px var(--accent-gold-glow);
+}
+
+.ember-glow-cyan {
+  box-shadow: 0 0 40px -6px rgba(0, 180, 216, 0.28);
+}
+
+/* Keycap token */
+.keycap {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-main);
+  color: var(--text-muted);
+}
+
+/* Tabular figures */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-main);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
