@@ -1,69 +1,49 @@
-# 🎓 Adaptive SQL Tutor (Track ED-02)
+# 🎓 AIRAVATA: Adaptive Tutor
 
-An intelligent, transparent adaptive learning tutor built for the 24-hour hackathon. 
+**Live demo:** [PASTE YOUR VERCEL LINK HERE]
 
-It implements **Approach 3: Hybrid (Rule-Based + Bayesian Knowledge Tracing + Safeguarded LLM Rephraser)**.
+AIRAVATA is an adaptive learning tutor. It checks how a student understands a topic, then changes how it teaches. It started as a 24-hour hackathon project (Track ED-02, The Adaptive Tutor) and is now developed as a personal project. Current subject: [SQL / list the subjects that really work].
 
----
+## How it works
 
-## 🌟 Key Features Built for the Hackathon Rubric
+1. **Teach:** a short, reviewed lesson card for each topic.
+2. **Check:** questions whose wrong answers are tagged with known misconceptions.
+3. **Adapt:** the tutor moves the student between two paths:
+   - **Fast-track** when mastery is high.
+   - **Guided remediation** with worked examples when it is low.
 
-1. **Teach First → Check Understanding → Adapt Strategy**
-   - **Step 1 (Teach):** Bite-sized reviewed micro-lesson card with core concepts and an interactive relational table visualizer.
-   - **Step 2 (Check):** Diagnostic questions with distractor choices mapped to known cognitive misconceptions.
-   - **Step 3 (Adapt):** Dynamically branches into **Fast-Track Acceleration** ($P \ge 0.70$) or **Guided Remediation** with visual worked examples.
+## Features
 
-2. **Mathematical Learner Model (Bayesian Knowledge Tracing - BKT)**
-   - Tracks live mastery probability $P(L_t) \in [0.0, 1.0]$ for each learning objective using the standard 4-parameter BKT formulation ($P(L_0), P(T), P(G), P(S)$).
-   - Real-time animated progress gauges show actual mastery growth.
+- **Mastery tracking** with Bayesian Knowledge Tracing: a mastery probability for each learning objective, shown as live progress.
+- **"Tutor Brain" panel:** shows why each next activity was chosen, so the adaptive rules are visible and explained.
+- **Challenge this explanation:** learners can question an explanation instead of just accepting it.
+- **Optional AI rephrasing:** paste your own Google Gemini API key in Settings, and the tutor can restate a reviewed explanation in a different style (analogy, simple words, step by step, Socratic). The AI is only asked to reword reviewed content. The key is stored in your browser only.
+- **Fallback without a key:** [CONFIRM: the app uses pre-written reviewed explanations when no key is set].
+- **Listen button** using the browser's built-in speech feature.
+- **Math rendering** with KaTeX.
 
-3. **Glass-Box "Tutor Brain Inspector" (Judge Inspection Mode)**
-   - Live audit stream explaining **WHY** each next activity is chosen (e.g. `"Rule Fired: Misconception M1 detected -> Diverted to Remedial Path"`).
-   - One-click demo shortcuts: *"Simulate Misconception"* and *"Simulate High Mastery"*.
+## Limitations
 
-4. **Pedagogical Safeguards & Boundaries (Zero Hallucination)**
-   - Pre-reviewed curriculum bank ensures ground truth database accuracy.
-   - The LLM (Gemini 1.5 Flash) is strictly constrained to stylistic rephrasing:
-     - 🎪 **Analogy Mode**
-     - 🧸 **ELI5 (Explain Like I'm 5)**
-     - 🔢 **Step-by-Step Breakdown**
-     - 🧐 **Socratic Inquiry**
-   - **Offline / Low-Resource Fallback:** If offline or without an API key, pre-written reviewed fallbacks load instantly with zero latency.
+- Content is limited to [subjects/topics you actually have]. More subjects are planned.
+- AI rephrasing is optional and can still make mistakes. Reviewed content is the source of truth.
+- Not yet tested with real learners, so no learning-outcome claims are made.
+- [Add anything else that is unfinished.]
 
-5. **Learner Challenge Safeguard (Rubric Boundary)**
-   - Dedicated *"Challenge / Question This Explanation"* portal allows learners to question the tutor's rules, evaluated against ANSI SQL standards.
-
-6. **Accessibility & Low-End Device Support**
-   - Built-in Voice Mode using native browser speech synthesis (`window.speechSynthesis`).
-   - Pure client-side reactivity; runs smoothly even on entry-level Chromebooks or phones.
-
----
-
-## 🚀 Running the Project
+## Run it locally
 
 ```bash
-# Navigate to the project directory
-cd C:\Users\rvvrd\.gemini\antigravity\scratch\adaptive-tutor
-
-# Install dependencies (already completed)
+git clone https://github.com/adityav-080907/adaptive-tutor.git
+cd adaptive-tutor
 npm install
-
-# Start development server
 npm run dev
 ```
 
-Visit **`http://localhost:5173/`** in your browser.
+Then open http://localhost:5173/ in your browser.
 
----
+## Project structure
 
-## 📁 Project Architecture
-
-- **`src/types.ts`**: TypeScript schemas for objectives, misconceptions, questions, BKT states, and audit logs.
-- **`src/data/curriculum.ts`**: Curated, pre-reviewed question bank across 3 objectives with tagged cognitive misconceptions and fallback rephrasings.
-- **`src/engine/bktEngine.ts`**: Pure mathematical BKT engine and adaptive rule state machine.
-- **`src/services/llmService.ts`**: Google AI Studio Gemini integration, prompt guardrails, offline fallback matrix, and speech synthesis.
-- **`src/components/SqlVisualizer.tsx`**: Interactive relational table visualizer demonstrating row matching, NULL preservation, and WHERE clause pitfalls.
-- **`src/components/TutorBrainDrawer.tsx`**: Glass-box drawer for judges displaying live BKT meters, decision logs, and demo simulation presets.
-- **`src/components/ChallengeModal.tsx`**: Learner challenge safeguard dialog.
-- **`src/components/LessonCard.tsx`**: Central learning interface.
-- **`src/components/Header.tsx`**: Navigation with real-time mastery badges and voice toggle.
+- `src/engine/bktEngine.ts`: Bayesian Knowledge Tracing and the adaptive rules.
+- `src/data/curriculumData.ts`: the reviewed question bank with misconception tags.
+- `src/services/llmService.ts`: optional Gemini rephrasing and fallbacks.
+- `src/components/`: the interface (landing page, dashboard, lessons, questions and feedback, Tutor Brain drawer, challenge dialog).
+- `src/types.ts`: shared TypeScript types.
