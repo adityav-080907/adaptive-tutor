@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Key, ExternalLink, Check, Shield, WifiOff } from 'lucide-react';
+import { Key, Shield } from 'lucide-react';
 import { getStoredApiKey, saveStoredApiKey } from '../services/llmService';
 
 interface ApiKeyModalProps {
@@ -38,35 +38,42 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-slate-200">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
-              <Key className="w-5 h-5" />
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div className="bg-[var(--bg-surface-low)] border border-[var(--border-hairline)] rounded-2xl max-w-md w-full p-6 shadow-[0_16px_48px_rgba(0,0,0,0.85)] relative text-[var(--text-primary)] space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[var(--bg-surface-high)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-primary)]">
+              <Key className="w-5 h-5 text-amber-300" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">AI Engine Configuration</h3>
-              <p className="text-xs text-slate-400">Gemini 1.5 Flash API Key (Optional)</p>
+              <h3 className="font-display text-sm font-bold uppercase text-[var(--text-primary)]">
+                AI Engine Configuration
+              </h3>
+              <p className="font-mono text-xs text-[var(--text-muted)]">
+                Gemini 1.5 Flash API Key (Optional)
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-slate-500 hover:text-white p-1 rounded-lg">
+          <button
+            onClick={onClose}
+            className="text-[var(--text-muted)] hover:text-white p-1 rounded-lg font-mono"
+          >
             ✕
           </button>
         </div>
 
-        <div className="p-3 bg-emerald-950/40 border border-emerald-800/80 rounded-xl mb-4 text-xs text-emerald-200 flex items-start gap-2">
-          <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+        <div className="p-3.5 bg-[var(--bg-surface-container)] border border-[var(--border-subtle)] rounded-xl text-xs text-[var(--text-secondary)] flex items-start gap-2.5 leading-relaxed">
+          <Shield className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
           <div>
-            <strong>100% Hackathon-Ready Without an API Key:</strong>
-            <p className="text-emerald-300/80 mt-0.5">
-              If left blank, the app seamlessly runs on reviewed pre-written fallback matrices. Entering a key unlocks real-time generative rephrasing via Gemini 1.5 Flash.
+            <strong className="text-[var(--text-primary)] font-mono block">100% Offline-Ready &amp; Verified:</strong>
+            <p className="mt-0.5">
+              If left blank, the app runs on deterministic curriculum matrices. Entering a key unlocks real-time generative rephrasing and challenge evaluations.
             </p>
           </div>
         </div>
 
-        <div className="space-y-3 mb-5">
-          <label className="text-xs font-semibold text-slate-300 block">
+        <div className="space-y-2">
+          <label className="font-mono text-xs text-[var(--text-muted)] block uppercase">
             Google AI Studio API Key:
           </label>
           <input
@@ -74,41 +81,32 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => 
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="AIzaSy..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono"
+            className="w-full bg-[var(--bg-main)] border border-[var(--border-main)] focus:border-white rounded-xl px-3.5 py-2.5 font-mono text-xs text-white placeholder-[var(--text-muted)] focus:outline-none"
           />
-          <div className="flex items-center justify-between text-[11px] text-slate-400">
-            <a
-              href="https://aistudio.google.com/app/apikey"
-              target="_blank"
-              rel="noreferrer"
-              className="text-indigo-400 hover:underline flex items-center gap-1"
-            >
-              Get free key in 30 seconds <ExternalLink className="w-3 h-3" />
-            </a>
-            <span className="text-slate-500">Stored locally in browser</span>
-          </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex items-center justify-between pt-2">
           <button
             onClick={handleClear}
-            className="flex-1 py-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-400 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+            className="font-mono text-xs text-[var(--text-muted)] hover:text-white"
           >
-            <WifiOff className="w-3.5 h-3.5" />
-            Run Offline / Fallback
+            Clear key
           </button>
-          <button
-            onClick={handleSave}
-            className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
-          >
-            {isSaved ? (
-              <>
-                <Check className="w-4 h-4 text-white" /> Saved!
-              </>
-            ) : (
-              'Save Key'
-            )}
-          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-full border border-[var(--border-main)] text-[var(--text-secondary)] font-mono text-xs hover:bg-[var(--bg-surface-high)]"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-5 py-2 rounded-full bg-[var(--text-primary)] text-[var(--text-on-primary)] font-mono text-xs font-bold uppercase tracking-wider shadow-sm hover:scale-105 transition-all"
+            >
+              {isSaved ? 'Saved ✓' : 'Save Key'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

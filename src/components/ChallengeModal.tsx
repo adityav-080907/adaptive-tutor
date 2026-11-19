@@ -38,106 +38,100 @@ export const ChallengeModal: React.FC<ChallengeModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[var(--bg-surface)] border border-[var(--border-main)] rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-[var(--text-primary)]">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-violet-500/15 text-violet-500 border border-violet-500/30">
-              <ShieldCheck className="w-5 h-5" />
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div className="bg-[var(--bg-surface-low)] border border-[var(--border-hairline)] rounded-2xl max-w-lg w-full p-6 shadow-[0_16px_48px_rgba(0,0,0,0.85)] relative text-[var(--text-primary)] space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[var(--bg-surface-high)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-primary)]">
+              <ShieldCheck className="w-5 h-5 text-purple-400" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-[var(--text-primary)]">Learner Challenge Portal</h3>
-              <p className="text-xs text-[var(--text-secondary)]">
-                Peer Review & Critical Thinking Safeguard
+              <h3 className="font-display text-sm font-bold uppercase text-[var(--text-primary)]">
+                Learner Challenge Portal
+              </h3>
+              <p className="font-mono text-xs text-[var(--text-muted)]">
+                Peer Review &amp; Critical Thinking Safeguard
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-1 rounded-lg"
+            className="text-[var(--text-muted)] hover:text-white p-1 rounded-lg font-mono"
           >
             ✕
           </button>
         </div>
 
-        <p className="text-xs text-[var(--text-secondary)] mb-3 leading-relaxed">
-          Think an explanation is counter-intuitive, incomplete, or confusing? Submit your objection or edge-case query. The tutor will evaluate your critique with pedagogical safeguards.
+        <p className="font-sans text-xs text-[var(--text-secondary)] leading-relaxed">
+          Think an explanation is counter-intuitive, incomplete, or confusing? Submit your critique or edge-case query. The tutor evaluates your objection with pedagogical validation.
         </p>
 
         {/* Quick Suggestion Chips */}
-        <div className="mb-4">
-          <span className="text-[11px] text-[var(--text-secondary)] font-medium block mb-1.5">
-            Quick challenge examples:
+        <div className="space-y-1.5">
+          <span className="font-mono text-[11px] text-[var(--text-muted)] uppercase block">
+            Sample Challenge Inquiries:
           </span>
-          <div className="flex flex-col gap-1.5">
-            {sampleChallenges.map((s, idx) => (
+          <div className="space-y-1.5">
+            {sampleChallenges.map((sample, idx) => (
               <button
                 key={idx}
                 onClick={() => {
-                  setChallengeText(s);
-                  handleChallenge(s);
+                  setChallengeText(sample);
+                  handleChallenge(sample);
                 }}
-                className="text-left text-xs bg-[var(--bg-main)] hover:bg-[var(--bg-secondary)] border border-[var(--border-main)] p-2 rounded-lg text-[var(--text-primary)] transition-colors"
+                className="w-full text-left p-2.5 rounded-xl bg-[var(--bg-surface-container)] hover:bg-[var(--bg-surface-high)] border border-[var(--border-subtle)] font-mono text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors leading-relaxed"
               >
-                💬 "{s}"
+                &gt; {sample}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Custom Input */}
-        <div className="space-y-2 mb-4">
+        {/* Challenge Input Field */}
+        <div className="space-y-2 pt-1">
           <textarea
             value={challengeText}
             onChange={(e) => setChallengeText(e.target.value)}
-            placeholder="Type your objection or challenge here (e.g. 'Why does the vertical line test work for functions?')"
-            className="w-full bg-[var(--bg-main)] border border-[var(--border-main)] rounded-xl p-3 text-xs text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] min-h-[80px]"
+            placeholder="Type your objection, edge-case, or alternative explanation here..."
+            rows={3}
+            className="w-full bg-[var(--bg-main)] border border-[var(--border-main)] focus:border-white rounded-xl p-3 font-mono text-xs text-white placeholder-[var(--text-muted)] focus:outline-none resize-none"
           />
-          <button
-            onClick={() => handleChallenge()}
-            disabled={isEvaluating || !challengeText.trim()}
-            className="w-full py-2 bg-[var(--accent-primary)] hover:opacity-90 disabled:opacity-50 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
-          >
-            {isEvaluating ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                Auditing Challenge against Academic Standards...
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4" />
-                Submit Challenge to Tutor
-              </>
-            )}
-          </button>
+
+          <div className="flex justify-end">
+            <button
+              onClick={() => handleChallenge()}
+              disabled={isEvaluating || !challengeText.trim()}
+              className="px-5 py-2.5 rounded-full bg-[var(--text-primary)] text-[var(--text-on-primary)] font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-sm disabled:opacity-40 hover:scale-105 transition-all"
+            >
+              {isEvaluating ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Evaluating...</span>
+                </>
+              ) : (
+                <>
+                  <span>Submit Challenge</span>
+                  <Send className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* Evaluation Output */}
+        {/* Evaluation Result */}
         {result && (
-          <div className="p-3.5 bg-[var(--bg-main)] border border-[var(--border-main)] rounded-xl space-y-2 animate-fadeIn">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-emerald-500 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                Tutor Audit Feedback
-              </span>
-              <span className="text-[10px] text-[var(--text-secondary)] font-mono">
-                {result.source === 'llm' ? '⚡ Gemini 1.5 Flash' : '🔒 Academic Spec'}
+          <div className="p-4 rounded-xl bg-[var(--bg-surface-container)] border border-[var(--border-subtle)] space-y-2 text-xs">
+            <div className="font-mono font-bold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span className="text-[var(--text-primary)] uppercase">
+                Tutor Judgment // {result.verdict}
               </span>
             </div>
-            <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-sans">
+            <p className="font-sans text-[var(--text-secondary)] leading-relaxed">
               {result.response}
             </p>
           </div>
         )}
-
-        <div className="mt-4 pt-3 border-t border-[var(--border-main)] flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-1.5 bg-[var(--bg-secondary)] hover:bg-[var(--border-main)] text-[var(--text-primary)] text-xs rounded-lg font-medium transition-colors"
-          >
-            Close
-          </button>
-        </div>
       </div>
     </div>
   );

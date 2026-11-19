@@ -9,8 +9,10 @@ import {
   ArrowRight,
   Scale,
   RefreshCw,
+  Terminal,
+  Activity,
   CheckCircle2,
-  AlertTriangle,
+  HelpCircle,
 } from 'lucide-react';
 import { Topic, Chapter, Branch, SubjectCategory, RephraseStyle } from '../types';
 import { MathRenderer } from './MathRenderer';
@@ -36,7 +38,6 @@ export const TopicLessonView: React.FC<TopicLessonViewProps> = ({
   onBackToRoadmap,
   onOpenChallengeModal,
 }) => {
-  const [activeTab, setActiveTab] = useState<'theory' | 'visuals' | 'examples' | 'key_points' | 'misconceptions'>('theory');
   const [selectedStyle, setSelectedStyle] = useState<RephraseStyle>('standard');
   const [activeExplanation, setActiveExplanation] = useState<string>(topic.lesson.theoryMarkdown);
   const [isRephrasing, setIsRephrasing] = useState<boolean>(false);
@@ -59,7 +60,7 @@ export const TopicLessonView: React.FC<TopicLessonViewProps> = ({
     setIsRephrasing(false);
   };
 
-  // Text-To-Speech (Listen button from Screen 3)
+  // Text-To-Speech
   const handleToggleSpeech = () => {
     if (isSpeaking) {
       stopSpeech();
@@ -72,94 +73,106 @@ export const TopicLessonView: React.FC<TopicLessonViewProps> = ({
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      {/* Top Header & Breadcrumbs (Screen 3 & 4 in reference) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border-main)] pb-4">
-        <div>
-          <nav className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] mb-1 font-sans">
-            <button onClick={onBackToRoadmap} className="hover:text-[var(--text-primary)]">
-              {subject.name}
-            </button>
-            <span>/</span>
-            <span className="hover:text-[var(--text-primary)]">{chapter.title}</span>
-            <span>/</span>
-            <span className="text-[var(--text-primary)] font-semibold">{topic.title}</span>
-          </nav>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[var(--text-primary)]">
+    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8 text-left">
+      {/* =========================================================================
+          TOP TELEMETRY STRIP & RE-ANCHORING HERO (Matched to Stitch)
+         ========================================================================= */}
+      <section className="relative w-full rounded-2xl bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] p-6 lg:p-8 shadow-2xl overflow-hidden">
+        {/* Ambient Specular Glow */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col gap-4">
+          {/* Breadcrumb & Metadata Badge Array */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-[var(--border-main)]">
+            <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-[var(--text-muted)]">
+              <button
+                onClick={onBackToRoadmap}
+                className="inline-flex items-center gap-1 text-[var(--text-primary)] hover:underline"
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>{branch.name.toUpperCase()}</span>
+              </button>
+              <span>&gt;</span>
+              <span>{chapter.title.toUpperCase()}</span>
+              <span>&gt;</span>
+              <span className="text-[var(--text-primary)] bg-[var(--bg-surface-high)] px-2.5 py-0.5 rounded-full font-mono text-[10px] tracking-wider font-bold">
+                CONCEPT CARD
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 font-mono text-xs">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-surface-high)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                <span className="text-[var(--text-secondary)]">NODE: #{topic.id.slice(-6).toUpperCase()}</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-surface-high)] text-[var(--text-secondary)]">
+                <Clock className="w-3.5 h-3.5" />
+                <span>~{topic.estimatedMinutes} MIN SYNC</span>
+              </div>
+
+              {/* Listen / TTS Button */}
+              <button
+                onClick={handleToggleSpeech}
+                className={`px-3.5 py-1 rounded-full font-mono text-xs font-semibold border flex items-center gap-1.5 transition-all ${
+                  isSpeaking
+                    ? 'bg-rose-500/10 border-rose-500 text-rose-400 animate-pulse'
+                    : 'bg-[var(--bg-surface-high)] border-[var(--border-hairline)] text-[var(--text-primary)] hover:bg-[var(--text-primary)] hover:text-[var(--text-on-primary)]'
+                }`}
+              >
+                {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                <span>{isSpeaking ? 'Pause' : 'Listen'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Main Headline & Mental Model Subtitle */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-white" />
+              <p className="font-mono text-xs tracking-widest uppercase text-[var(--text-muted)] font-semibold">
+                RE-ANCHORING MENTAL MODEL
+              </p>
+            </div>
+
+            <h1 className="font-display text-2xl sm:text-4xl font-bold text-[var(--text-primary)] tracking-tight">
               {topic.title}
             </h1>
-            <span className="text-xs px-2.5 py-0.5 rounded-full border border-[var(--border-main)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] font-mono flex items-center gap-1">
-              <Clock className="w-3 h-3" /> {topic.estimatedMinutes} min
-            </span>
+
+            <p className="font-sans text-xs sm:text-sm text-[var(--text-secondary)] max-w-4xl leading-relaxed">
+              {topic.subtitle} Building zero-hesitation intuition before testing.
+            </p>
           </div>
         </div>
+      </section>
 
-        {/* Listen / TTS Button (Matching Screen 3 button exactly) */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleToggleSpeech}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold border flex items-center gap-2 shadow-xs transition-all ${
-              isSpeaking
-                ? 'bg-rose-500/10 border-rose-500 text-rose-500 animate-pulse'
-                : 'bg-[var(--bg-surface)] border-[var(--border-main)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]'
-            }`}
-          >
-            {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-[var(--accent-primary)]" />}
-            <span>{isSpeaking ? 'Pause Audio' : 'Listen'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Lesson Subnav Tabs (Theory, Visuals, Examples, Key Points, Misconceptions) */}
-      <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-2 overflow-x-auto text-xs font-medium">
-        {[
-          { id: 'theory', label: 'Theory' },
-          { id: 'visuals', label: 'Visuals' },
-          { id: 'examples', label: 'Examples' },
-          { id: 'key_points', label: 'Key Points' },
-          { id: 'misconceptions', label: 'Misconceptions' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
-              activeTab === tab.id
-                ? 'bg-[var(--accent-primary)] text-white font-semibold'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Main Lesson Body Grid: Central Theory Column + Right Visual Panel (Screen 3 Reference Layout) */}
+      {/* =========================================================================
+          DUAL CHAMBER MAIN GRID: THEORY & VECTOR VISUALIZER (Matched to Stitch)
+         ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left/Center Column: Theory & Explanations (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
-          {/* Explain Differently Rephrase Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-main)] text-xs">
-            <div className="flex items-center gap-1.5 text-[var(--text-muted)] pl-1">
-              <Sparkles className="w-3.5 h-3.5 text-[var(--accent-amber)]" />
-              <span>Explain differently:</span>
+        {/* LEFT CHAMBER: Core Axioms & Theory (7 cols) */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+          {/* Rephrasing Style Capsule Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-2xl bg-[var(--bg-surface-low)] border border-[var(--border-subtle)]">
+            <div className="flex items-center gap-1.5 font-mono text-xs text-[var(--text-muted)] pl-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>Adaptive Rephrasing:</span>
             </div>
             <div className="flex flex-wrap items-center gap-1">
               {[
                 { id: 'standard', label: 'Standard' },
-                { id: 'analogy', label: '🎪 Analogy' },
-                { id: 'eli5', label: '🧸 ELI5' },
-                { id: 'stepByStep', label: '🔢 Steps' },
-                { id: 'socratic', label: '🧐 Socratic' },
+                { id: 'analogy', label: 'Analogy' },
+                { id: 'eli5', label: 'ELI5' },
+                { id: 'stepByStep', label: 'Steps' },
+                { id: 'socratic', label: 'Socratic' },
               ].map((style) => (
                 <button
                   key={style.id}
                   onClick={() => handleStyleChange(style.id as RephraseStyle)}
                   disabled={isRephrasing}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                  className={`px-3 py-1 rounded-full font-mono text-xs transition-all ${
                     selectedStyle === style.id
-                      ? 'bg-[var(--accent-primary)] text-white'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                      ? 'bg-[var(--text-primary)] text-[var(--text-on-primary)] font-bold shadow-[0_0_12px_rgba(255,255,255,0.2)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-high)]'
                   }`}
                 >
                   {style.label}
@@ -168,106 +181,131 @@ export const TopicLessonView: React.FC<TopicLessonViewProps> = ({
             </div>
           </div>
 
-          {/* Theory Markdown Card with KaTeX Math Rendering */}
-          <div className="p-6 rounded-2xl border border-[var(--border-main)] bg-[var(--bg-surface)] shadow-xs space-y-4">
+          {/* Governing Axiom / Theory Container */}
+          <section className="w-full rounded-2xl bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] p-6 shadow-xl relative overflow-hidden space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--border-main)]">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-[var(--bg-surface-high)] text-[var(--text-primary)] font-bold">
+                  AXIOM 01
+                </span>
+                <h2 className="font-display text-sm font-bold text-[var(--text-primary)] uppercase tracking-wide">
+                  Core Foundations
+                </h2>
+              </div>
+              <span className="font-mono text-xs text-[var(--text-muted)]">
+                [THEORY &amp; FORMULATION]
+              </span>
+            </div>
+
             {isRephrasing ? (
-              <div className="flex items-center justify-center py-10 gap-2 text-[var(--accent-primary)] text-xs">
+              <div className="flex items-center justify-center py-12 gap-2 text-[var(--text-primary)] font-mono text-xs">
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Adapting explanation in {selectedStyle} style...</span>
+                <span>Adapting explanation in {selectedStyle} cognitive frame...</span>
               </div>
             ) : (
               <MathRenderer content={activeExplanation} className="text-sm leading-relaxed" />
             )}
 
-            {/* Bottom Guardrail & Challenge Button */}
-            <div className="pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-[11px] text-[var(--text-muted)]">
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                Reviewed Learning Content (Deterministic Ground Truth)
+            {/* Bottom Guardrail Row & Peer Review Trigger */}
+            <div className="pt-4 border-t border-[var(--border-main)] flex items-center justify-between font-mono text-[11px] text-[var(--text-muted)]">
+              <span className="flex items-center gap-1.5 text-emerald-400">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Deterministic Ground Truth</span>
               </span>
               <button
                 onClick={onOpenChallengeModal}
-                className="text-[var(--accent-primary)] hover:underline flex items-center gap-1 font-medium"
+                className="text-[var(--text-primary)] hover:underline flex items-center gap-1 font-semibold"
               >
-                <Scale className="w-3.5 h-3.5" />
-                Challenge explanation
+                <Scale className="w-3.5 h-3.5 text-amber-300" />
+                <span>Challenge content</span>
               </button>
             </div>
-          </div>
+          </section>
 
-          {/* Key Concepts Card (Matching Reference Screen 3) */}
-          <div className="p-6 rounded-2xl border border-[var(--border-main)] bg-[var(--bg-surface)] shadow-xs space-y-3">
-            <h3 className="text-sm font-serif font-bold text-[var(--text-primary)]">
-              Key Concepts & Definitions
+          {/* Key Concepts Bento Grid */}
+          <section className="w-full rounded-2xl bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] p-6 shadow-xl space-y-4">
+            <h3 className="font-display text-sm font-bold text-[var(--text-primary)] uppercase tracking-wide">
+              Key Concepts &amp; Definitions
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {topic.lesson.keyConcepts.map((item, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)]">
-                  <span className="font-bold text-[var(--text-primary)] block mb-0.5">
+                <div
+                  key={idx}
+                  className="p-3.5 rounded-xl bg-[var(--bg-surface-container)] border border-[var(--border-subtle)] space-y-1"
+                >
+                  <span className="font-mono text-xs font-bold text-[var(--text-primary)] block">
                     {item.label}
                   </span>
-                  <span className="text-[var(--text-secondary)]">{item.text}</span>
+                  <span className="font-sans text-xs text-[var(--text-secondary)] leading-relaxed">
+                    {item.text}
+                  </span>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* Examples Card */}
-          <div className="p-6 rounded-2xl border border-[var(--border-main)] bg-[var(--bg-surface)] shadow-xs space-y-3">
-            <h3 className="text-sm font-serif font-bold text-[var(--text-primary)]">
-              Worked Example
-            </h3>
-            {topic.lesson.examples.map((ex, idx) => (
-              <div key={idx} className="space-y-2 text-xs">
-                <h4 className="font-semibold text-[var(--text-primary)]">{ex.title}</h4>
-                <p className="text-[var(--text-secondary)]">{ex.description}</p>
-                {ex.mathOrCode && (
-                  <div className="p-3 rounded-xl bg-[var(--bg-secondary)] font-mono text-xs border border-[var(--border-subtle)]">
-                    <MathRenderer content={ex.mathOrCode} />
-                  </div>
-                )}
+          {/* Worked Examples Code Well */}
+          {topic.lesson.examples.map((ex, idx) => (
+            <section
+              key={idx}
+              className="w-full rounded-2xl bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] p-6 shadow-xl space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-sm font-bold text-[var(--text-primary)] uppercase">
+                  Worked Example: {ex.title}
+                </h3>
+                <span className="font-mono text-[10px] text-[var(--text-muted)]">RUN-AUDIT</span>
               </div>
-            ))}
-          </div>
-
-          {/* Real World Applications */}
-          <div className="p-4 rounded-xl border border-[var(--border-main)] bg-[var(--bg-surface)] text-xs text-[var(--text-secondary)] flex items-start gap-2.5">
-            <Sparkles className="w-4 h-4 text-[var(--accent-amber)] flex-shrink-0 mt-0.5" />
-            <div>
-              <strong className="text-[var(--text-primary)]">Real World Application: </strong>
-              <span>{topic.lesson.realWorldApp}</span>
-            </div>
-          </div>
+              <p className="font-sans text-xs text-[var(--text-secondary)] leading-relaxed">
+                {ex.description}
+              </p>
+              {ex.mathOrCode && (
+                <div className="code-well p-4 font-mono text-xs overflow-x-auto text-[var(--text-primary)]">
+                  <MathRenderer content={ex.mathOrCode} />
+                </div>
+              )}
+            </section>
+          ))}
         </div>
 
-        {/* Right Column: Visual Diagrams Panel + "I Understood" CTA (5 cols) */}
-        <div className="lg:col-span-5 space-y-6 sticky top-24">
-          {/* Visual Diagram Panel (SVG Set Mappings & Graph from Reference Screen 3) */}
-          <div className="rounded-2xl border border-[var(--border-main)] bg-[var(--bg-surface)] p-5 shadow-xs space-y-3">
-            <div className="flex items-center gap-1.5 text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider">
-              <BookOpen className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-              <span>Interactive Visual Explanation</span>
+        {/* RIGHT CHAMBER: Visual Projection & Test CTA (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col gap-6 sticky top-28">
+          {/* Visual Model Card */}
+          <section className="w-full rounded-2xl bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between font-mono text-xs pb-2 border-b border-[var(--border-main)]">
+              <span className="text-[var(--text-primary)] font-bold flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>SPATIAL PROJECTION</span>
+              </span>
+              <span className="text-[var(--text-muted)]">[INTERACTIVE VISUAL]</span>
             </div>
 
             <VisualDiagramPanel visual={topic.lesson.visuals} />
-          </div>
+          </section>
 
-          {/* THE "I UNDERSTOOD →" COMPLETION BUTTON (Screen 3 & 4 Reference CTA) */}
-          <div className="p-6 rounded-2xl border border-[var(--border-main)] bg-[var(--bg-surface)] shadow-sm space-y-3 text-center">
-            <h4 className="text-sm font-serif font-bold text-[var(--text-primary)]">
-              Ready to test your understanding?
-            </h4>
-            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-              Once you have reviewed the theory and visuals above, proceed to the adaptive assessment.
-            </p>
+          {/* THE "I UNDERSTOOD →" ASSESSMENT TRANSITION CAPSULE */}
+          <section className="w-full rounded-2xl bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] p-6 shadow-xl space-y-4 text-center">
+            <div className="w-10 h-10 rounded-full bg-[var(--bg-surface-high)] flex items-center justify-center mx-auto text-[var(--text-primary)]">
+              <Activity className="w-5 h-5 text-emerald-400" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="font-display text-base font-bold text-[var(--text-primary)] uppercase">
+                Ready for Diagnostic Verification?
+              </h3>
+              <p className="font-sans text-xs text-[var(--text-secondary)] leading-relaxed">
+                Proceed into the adaptive assessment question track. The Bayesian engine will measure your mastery baseline.
+              </p>
+            </div>
+
             <button
               onClick={onUnderstood}
-              className="w-full py-3.5 rounded-xl bg-[var(--accent-primary)] hover:opacity-95 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-transform hover:scale-[1.01]"
+              className="w-full py-3.5 rounded-full bg-[var(--text-primary)] text-[var(--text-on-primary)] font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(255,255,255,0.25)] hover:scale-105 transition-all"
             >
-              <span>I understood</span>
+              <span>I Understood — Begin Diagnostic</span>
               <ArrowRight className="w-4 h-4" />
             </button>
-          </div>
+          </section>
         </div>
       </div>
     </div>

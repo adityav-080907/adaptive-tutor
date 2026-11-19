@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import {
   ArrowLeft,
   CheckCircle2,
-  Lock,
   ChevronRight,
   Search,
   BookOpen,
-  Sparkles,
   Clock,
   Compass,
+  Verified,
 } from 'lucide-react';
 import { TopSubjectId, BranchId, TopicMasteryRecord } from '../types';
 import { SUBJECT_CATEGORIES, ALL_BRANCHES } from '../data/curriculumData';
@@ -33,260 +32,351 @@ export const SubjectRoadmap: React.FC<SubjectRoadmapProps> = ({
   const [filterQuery, setFilterQuery] = useState('');
 
   const subjectMeta = SUBJECT_CATEGORIES.find((s) => s.id === selectedSubject)!;
-  const currentBranch = ALL_BRANCHES.find((b) => b.id === selectedBranch) || ALL_BRANCHES.find((b) => b.subjectId === selectedSubject)!;
+  const currentBranch =
+    ALL_BRANCHES.find((b) => b.id === selectedBranch) ||
+    ALL_BRANCHES.find((b) => b.subjectId === selectedSubject)!;
 
-  // Selected Chapter / Active Preview
-  const [activeChapterId, setActiveChapterId] = useState<string>(
-    currentBranch.chapters[0]?.id || ''
-  );
+  const allBranchTopics = currentBranch.chapters.flatMap((c) => c.topics);
+  const masteredCount = allBranchTopics.filter(
+    (t) => masteryRecords[t.id] && masteryRecords[t.id].pMastery >= 0.85
+  ).length;
+  const attemptedCount = allBranchTopics.filter(
+    (t) => masteryRecords[t.id] && masteryRecords[t.id].totalAttempts > 0
+  ).length;
+
+  const totalMasteryPercent =
+    allBranchTopics.length > 0
+      ? Math.round((masteredCount / allBranchTopics.length) * 100)
+      : 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      {/* Top Header & Breadcrumbs (Matching Reference Screen 2) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border-main)] pb-4">
-        <div>
-          <button
-            onClick={onBackToHome}
-            className="text-xs font-semibold text-[var(--accent-primary)] hover:underline flex items-center gap-1.5 mb-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Subjects</span>
-          </button>
-          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[var(--text-primary)]">
-            {subjectMeta.name} Roadmap
+    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
+      {/* =========================================================================
+          SECTION 1: TOP MASTER HEADER & BLUEPRINT TELEMETRY (Matched to Stitch)
+         ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Directives, Title & Mastery Legend */}
+        <div className="lg:col-span-7 flex flex-col gap-4 text-left">
+          {/* Back button & Breadcrumbs */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={onBackToHome}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-surface-high)] hover:bg-[var(--text-primary)] hover:text-[var(--text-on-primary)] text-[var(--text-secondary)] font-mono text-xs transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Catalog</span>
+            </button>
+
+            <div className="flex items-center gap-2 font-mono text-xs text-[var(--text-muted)]">
+              <span>LANGUAGES</span>
+              <span>/</span>
+              <span className="text-[var(--text-secondary)] uppercase">{currentBranch.name}</span>
+              <span>/</span>
+              <span className="text-[var(--text-primary)] font-bold">CURRICULUM TOPICS</span>
+            </div>
+
+            <span className="px-3 py-0.5 rounded-full bg-[var(--bg-surface-high)] text-[var(--text-primary)] font-mono text-[10px] uppercase tracking-wider">
+              NODE 03 ACTIVE
+            </span>
+          </div>
+
+          {/* Main Headline */}
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[var(--text-primary)] uppercase tracking-tight leading-tight">
+            {currentBranch.name} Core Curriculum &amp; Mastery Blueprint
           </h1>
-          <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-sans">
-            Build your foundation. Explore deeper. Master each concept sequentially.
+
+          <p className="font-sans text-xs sm:text-sm text-[var(--text-secondary)] max-w-2xl leading-relaxed">
+            Core topics structured around practical application. Each verified across 4 cognitive mastery stages from declarative intake to autonomous implementation.
           </p>
+
+          {/* Mastery Stages Legend Bar Island */}
+          <div className="mt-2 inline-flex items-center gap-4 p-2 px-3 rounded-full bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] shadow-md w-fit flex-wrap">
+            <span className="font-mono text-[11px] text-[var(--text-muted)] uppercase tracking-widest">
+              STAGES:
+            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-zinc-600" />
+              <span className="font-mono text-xs text-[var(--text-muted)]">00 Not Started</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              <span className="font-mono text-xs text-[var(--text-primary)]">01 Learning</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-slate-400" />
+              <span className="font-mono text-xs text-[var(--text-secondary)]">02 Practised</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+              <span className="font-mono text-xs text-[var(--text-primary)] font-bold">03 Mastered</span>
+            </div>
+          </div>
         </div>
 
-        {/* Search within Subject */}
-        <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
+        {/* Right Column: Proficiency Telemetry Bento Card */}
+        <div className="lg:col-span-5 bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col gap-4 text-left">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Verified className="w-4 h-4 text-[var(--text-primary)]" />
+              <span className="font-mono text-[11px] tracking-widest text-[var(--text-muted)] uppercase">
+                TELEMETRY // SYNC READY
+              </span>
+            </div>
+            <span className="font-mono text-[11px] text-[var(--text-primary)] px-2 py-0.5 rounded bg-[var(--bg-surface-high)]">
+              {currentBranch.badge || 'CORE'}-COGNITIVE
+            </span>
+          </div>
+
+          <div className="flex items-baseline justify-between pt-1">
+            <div>
+              <div className="font-display text-4xl sm:text-5xl font-bold text-[var(--text-primary)] tracking-tight">
+                {totalMasteryPercent}%
+              </div>
+              <div className="font-sans text-xs text-[var(--text-secondary)] mt-0.5">
+                Total Track Mastered
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="font-display text-2xl font-bold text-[var(--text-primary)]">
+                {masteredCount} <span className="text-[var(--text-muted)] text-sm">/ {allBranchTopics.length}</span>
+              </div>
+              <div className="font-mono text-[11px] text-[var(--text-muted)] uppercase tracking-wider">
+                Verifiable Objectives
+              </div>
+            </div>
+          </div>
+
+          {/* Retention Stability Gradient Curve (SVG) */}
+          <div className="w-full bg-[var(--bg-main)] border border-[var(--border-main)] rounded-xl p-3 flex flex-col gap-1">
+            <div className="flex items-center justify-between font-mono text-[11px] text-[var(--text-muted)]">
+              <span>RETENTION STABILITY GRADIENT</span>
+              <span className="text-[var(--text-primary)] font-bold">▲ ACTIVE TRACKING</span>
+            </div>
+            <div className="w-full h-14 relative">
+              <svg className="w-full h-full text-white" fill="none" preserveAspectRatio="none" viewBox="0 0 300 64">
+                <defs>
+                  <linearGradient id="gradientRetention" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="currentColor" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="currentColor" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M0,52 C30,50 60,42 90,44 C120,46 150,30 180,28 C210,26 240,16 270,12 L300,10 L300,64 L0,64 Z"
+                  fill="url(#gradientRetention)"
+                />
+                <path
+                  d="M0,52 C30,50 60,42 90,44 C120,46 150,30 180,28 C210,26 240,16 270,12 L300,10"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeWidth="2"
+                />
+                <circle cx="180" cy="28" r="3.5" fill="#ffffff" />
+                <circle cx="300" cy="10" r="3.5" fill="#ffffff" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Tri-Metric Telemetry Stats */}
+          <div className="grid grid-cols-3 gap-2 pt-1 text-left">
+            <div className="bg-[var(--bg-surface-high)] rounded-xl p-2.5 flex flex-col">
+              <span className="font-mono text-xl font-bold text-[var(--text-primary)]">
+                {attemptedCount}
+              </span>
+              <span className="font-mono text-[9px] text-[var(--text-muted)] uppercase mt-0.5">
+                Attempted
+              </span>
+            </div>
+            <div className="bg-[var(--bg-surface-high)] rounded-xl p-2.5 flex flex-col">
+              <span className="font-mono text-xl font-bold text-[var(--text-primary)]">
+                {masteredCount}
+              </span>
+              <span className="font-mono text-[9px] text-[var(--text-muted)] uppercase mt-0.5">
+                Mastered
+              </span>
+            </div>
+            <div className="bg-[var(--bg-surface-high)] rounded-xl p-2.5 flex flex-col">
+              <span className="font-mono text-xl font-bold text-amber-300">
+                {attemptedCount - masteredCount > 0 ? attemptedCount - masteredCount : 0}
+              </span>
+              <span className="font-mono text-[9px] text-[var(--text-muted)] uppercase mt-0.5">
+                In Review
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          BRANCH SWITCHING PILLS & FILTER BAR
+         ========================================================================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
+        {/* Branch Selector Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <span className="font-mono text-xs text-[var(--text-muted)] uppercase tracking-wider mr-1">
+            Tracks:
+          </span>
+          {subjectMeta.branches.map((branch) => {
+            const isSelected = branch.id === currentBranch.id;
+            return (
+              <button
+                key={branch.id}
+                onClick={() => onSelectBranch(branch.id)}
+                className={`px-4 py-1.5 rounded-full font-mono text-xs transition-all whitespace-nowrap flex items-center gap-2 ${
+                  isSelected
+                    ? 'bg-[var(--text-primary)] text-[var(--text-on-primary)] font-bold shadow-[0_0_16px_rgba(255,255,255,0.15)]'
+                    : 'bg-[var(--bg-surface-low)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-high)] border border-[var(--border-subtle)]'
+                }`}
+              >
+                <span>{branch.name}</span>
+                <span className="text-[10px] opacity-75">({branch.tag})</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Search within curriculum */}
+        <div className="relative w-full sm:w-72">
+          <Search className="w-3.5 h-3.5 text-[var(--text-muted)] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={filterQuery}
             onChange={(e) => setFilterQuery(e.target.value)}
-            placeholder={`Search within ${subjectMeta.name}...`}
-            className="w-full bg-[var(--bg-surface)] border border-[var(--border-main)] rounded-xl pl-9 pr-3 py-2 text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)]"
+            placeholder={`Filter ${currentBranch.name} topics...`}
+            className="w-full bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] focus:border-[var(--text-primary)] rounded-full pl-9 pr-4 py-2 font-mono text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none"
           />
         </div>
       </div>
 
-      {/* Branch Selection Pills (e.g. All, Python, C, C++ or Functions, Algebra, Calculus) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        <span className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider mr-1">
-          Branch:
-        </span>
-        {subjectMeta.branches.map((branch) => {
-          const isSelected = branch.id === currentBranch.id;
-          return (
-            <button
-              key={branch.id}
-              onClick={() => {
-                onSelectBranch(branch.id);
-                const targetBranch = ALL_BRANCHES.find((b) => b.id === branch.id);
-                if (targetBranch && targetBranch.chapters.length > 0) {
-                  setActiveChapterId(targetBranch.chapters[0].id);
-                }
-              }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap flex items-center gap-1.5 ${
-                isSelected
-                  ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white shadow-xs'
-                  : 'bg-[var(--bg-surface)] border-[var(--border-main)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--text-muted)]'
-              }`}
-            >
-              <span>{branch.name}</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${isSelected ? 'bg-white/20 text-white' : 'bg-[var(--bg-secondary)] text-[var(--text-muted)]'}`}>
-                {branch.tag}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Main Roadmap Grid (Screen 2: Timeline + Chapter Accordion + Preview) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Sequential Chapter Flowchart (7 cols) */}
-        <div className="lg:col-span-8 rounded-2xl border border-[var(--border-main)] bg-[var(--bg-surface)] p-6 shadow-xs space-y-6">
-          <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-2">
-              <Compass className="w-4 h-4 text-[var(--accent-primary)]" />
-              <span>{currentBranch.name} Learning Path</span>
+      {/* =========================================================================
+          CHAPTERS & TOPICS MATRIX (Sequential Adaptive Syllabus)
+         ========================================================================= */}
+      <div className="space-y-8 text-left">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="font-display text-lg font-bold text-[var(--text-primary)] uppercase">
+              Core Syllabus
             </span>
-            <span className="text-xs font-mono text-[var(--text-muted)]">
-              {currentBranch.chapters.length} Chapters
+            <span className="font-mono text-xs text-[var(--text-muted)]">
+              // LEVEL 01 - SEQUENTIAL FOUNDATIONS
             </span>
           </div>
-
-          {/* Sequential Chapter Roadmap Timeline */}
-          <div className="space-y-6 relative before:absolute before:inset-0 before:left-4 before:w-0.5 before:bg-[var(--border-main)]">
-            {currentBranch.chapters.map((chapter, cIdx) => {
-              const isChapterActive = chapter.id === activeChapterId;
-              const hasTopics = chapter.topics.length > 0;
-
-              return (
-                <div key={chapter.id} className="relative pl-10 space-y-3">
-                  {/* Timeline Node Circle */}
-                  <div
-                    className={`absolute left-2.5 -translate-x-1/2 w-4 h-4 rounded-full border-2 flex items-center justify-center bg-[var(--bg-surface)] ${
-                      hasTopics
-                        ? 'border-[var(--accent-primary)] text-[var(--accent-primary)] ring-4 ring-[var(--accent-primary)]/10'
-                        : 'border-[var(--border-main)] text-[var(--text-muted)]'
-                    }`}
-                  />
-
-                  {/* Chapter Header Card */}
-                  <div
-                    onClick={() => setActiveChapterId(chapter.id)}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
-                      isChapterActive
-                        ? 'bg-[var(--bg-secondary)] border-[var(--accent-primary)] shadow-xs'
-                        : 'bg-[var(--bg-surface)] border-[var(--border-subtle)] hover:border-[var(--border-main)]'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold text-[var(--accent-primary)]">
-                          Chapter 0{chapter.order}
-                        </span>
-                        <h3 className="text-sm font-bold text-[var(--text-primary)]">
-                          {chapter.title}
-                        </h3>
-                      </div>
-                      <p className="text-xs text-[var(--text-secondary)] mt-1">
-                        {chapter.description}
-                      </p>
-                    </div>
-
-                    <span className="text-xs text-[var(--text-muted)] font-mono whitespace-nowrap ml-4">
-                      {chapter.topics.length > 0 ? `${chapter.topics.length} topics` : 'Roadmap node'}
-                    </span>
-                  </div>
-
-                  {/* Nested Topics Flow (Directly matching Screen 2 in Reference!) */}
-                  {chapter.topics.length > 0 && (
-                    <div className="space-y-2 pt-1 pl-2">
-                      {chapter.topics.map((topic) => {
-                        const rec = masteryRecords[topic.id];
-                        const isMastered = rec && rec.pMastery >= 0.85;
-                        const isStudied = rec && rec.totalAttempts > 0;
-
-                        return (
-                          <div
-                            key={topic.id}
-                            onClick={() => onSelectTopic(topic.id)}
-                            className="p-3 rounded-xl border border-[var(--border-main)] bg-[var(--bg-surface)] hover:bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] transition-all cursor-pointer flex items-center justify-between group"
-                          >
-                            <div className="flex items-center gap-3">
-                              {/* Status Check / Node indicator */}
-                              <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs">
-                                {isMastered ? (
-                                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                                ) : (
-                                  <div className="w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] animate-pulse" />
-                                )}
-                              </div>
-                              <div>
-                                <span className="text-xs font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
-                                  {topic.title}
-                                </span>
-                                <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] mt-0.5">
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3" /> {topic.estimatedMinutes} min
-                                  </span>
-                                  <span>•</span>
-                                  <span>{topic.subtopics.slice(0, 2).join(', ')}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <button className="px-3 py-1 rounded-lg bg-[var(--accent-primary)] text-white text-xs font-semibold flex items-center gap-1 group-hover:opacity-90 transition-opacity">
-                              <span>Learn</span>
-                              <ChevronRight className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <span className="font-mono text-xs text-[var(--text-muted)]">
+            {currentBranch.chapters.length} CHAPTERS ACTIVE
+          </span>
         </div>
 
-        {/* Right Column: Featured Lesson Spotlight / Info Panel (Screen 2 reference right card) */}
-        <div className="lg:col-span-4 rounded-2xl border border-[var(--border-main)] bg-[var(--bg-surface)] p-6 shadow-xs space-y-4 sticky top-24">
-          <div className="flex items-center gap-2 text-xs font-mono text-[var(--accent-primary)] uppercase tracking-wider">
-            <Sparkles className="w-4 h-4 text-[var(--accent-amber)]" />
-            <span>Recommended Next Lesson</span>
-          </div>
+        <div className="space-y-6">
+          {currentBranch.chapters.map((chapter) => {
+            const filteredTopics = filterQuery.trim()
+              ? chapter.topics.filter(
+                  (t) =>
+                    t.title.toLowerCase().includes(filterQuery.toLowerCase()) ||
+                    t.subtitle.toLowerCase().includes(filterQuery.toLowerCase())
+                )
+              : chapter.topics;
 
-          {currentBranch.chapters.some((c) => c.topics.length > 0) ? (
-            (() => {
-              const activeTopic = currentBranch.chapters.flatMap((c) => c.topics)[0];
-              const rec = masteryRecords[activeTopic.id];
-              const pct = rec ? Math.round(rec.pMastery * 100) : 20;
+            if (filterQuery.trim() && filteredTopics.length === 0) return null;
 
-              return (
-                <div className="space-y-4">
+            return (
+              <div
+                key={chapter.id}
+                className="rounded-2xl bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] p-6 shadow-xl space-y-4"
+              >
+                {/* Chapter Title Row */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--border-main)] pb-3">
                   <div>
-                    <h3 className="text-base font-bold text-[var(--text-primary)]">
-                      {activeTopic.title}
-                    </h3>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
-                      {activeTopic.subtitle}
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-[var(--accent-cyan)] font-bold">
+                        CHAPTER 0{chapter.order}
+                      </span>
+                      <h2 className="font-display text-base font-bold text-[var(--text-primary)] uppercase">
+                        {chapter.title}
+                      </h2>
+                    </div>
+                    <p className="font-sans text-xs text-[var(--text-secondary)] mt-1">
+                      {chapter.description}
                     </p>
                   </div>
-
-                  {/* Mastery Indicator */}
-                  <div className="p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)] space-y-1.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-[var(--text-primary)]">BKT Mastery Estimate</span>
-                      <span className="font-mono font-bold text-[var(--accent-primary)]">{pct}%</span>
-                    </div>
-                    <div className="w-full bg-[var(--border-main)] h-2 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[var(--accent-primary)] rounded-full transition-all duration-500"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Prerequisites */}
-                  {activeTopic.prerequisites && (
-                    <div className="text-xs space-y-1">
-                      <span className="text-[11px] text-[var(--text-muted)] font-mono block">PREREQUISITES:</span>
-                      <div className="flex flex-wrap gap-1">
-                        {activeTopic.prerequisites.map((p, idx) => (
-                          <span
-                            key={idx}
-                            className="text-[10px] px-2 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
-                          >
-                            ✓ {p}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => onSelectTopic(activeTopic.id)}
-                    className="w-full py-3 rounded-xl bg-[var(--accent-primary)] hover:opacity-90 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all"
-                  >
-                    <span>Start This Lesson</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+                  <span className="font-mono text-xs text-[var(--text-muted)]">
+                    {chapter.topics.length} Objectives
+                  </span>
                 </div>
-              );
-            })()
-          ) : (
-            <div className="p-6 text-center text-xs text-[var(--text-muted)] space-y-2">
-              <BookOpen className="w-8 h-8 mx-auto text-[var(--text-muted)]" />
-              <p>Select a chapter on the left to inspect its learning objectives.</p>
-            </div>
-          )}
+
+                {/* Topics Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredTopics.map((topic) => {
+                    const rec = masteryRecords[topic.id];
+                    const isMastered = rec && rec.pMastery >= 0.85;
+                    const isStarted = rec && rec.totalAttempts > 0;
+                    const pVal = rec ? Math.round(rec.pMastery * 100) : 20;
+
+                    return (
+                      <div
+                        key={topic.id}
+                        onClick={() => onSelectTopic(topic.id)}
+                        className="p-4 rounded-xl bg-[var(--bg-surface-container)] border border-[var(--border-subtle)] hover:border-[var(--border-hairline)] transition-all cursor-pointer flex flex-col justify-between gap-4 group hover:shadow-md"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-[var(--bg-surface-high)] text-[var(--text-muted)] uppercase">
+                              MODULE #{topic.id.slice(-4).toUpperCase()}
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              {isMastered ? (
+                                <span className="inline-flex items-center gap-1 font-mono text-[10px] text-emerald-400 font-bold">
+                                  <CheckCircle2 className="w-3.5 h-3.5" /> MASTERED
+                                </span>
+                              ) : isStarted ? (
+                                <span className="inline-flex items-center gap-1 font-mono text-[10px] text-amber-300 font-bold">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping" /> IN PROGRESS
+                                </span>
+                              ) : (
+                                <span className="font-mono text-[10px] text-[var(--text-muted)]">
+                                  NOT STARTED
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <h3 className="font-display text-sm font-bold text-[var(--text-primary)] group-hover:text-white transition-colors">
+                            {topic.title}
+                          </h3>
+
+                          <p className="font-sans text-xs text-[var(--text-secondary)] line-clamp-2">
+                            {topic.subtitle}
+                          </p>
+
+                          <div className="flex items-center gap-2 pt-1 font-mono text-[10px] text-[var(--text-muted)]">
+                            <Clock className="w-3 h-3" />
+                            <span>{topic.estimatedMinutes} min</span>
+                            <span>•</span>
+                            <span>{topic.subtopics.length} key subtopics</span>
+                          </div>
+                        </div>
+
+                        {/* Action Bar */}
+                        <div className="flex items-center justify-between pt-2 border-t border-[var(--border-main)]">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-[10px] text-[var(--text-muted)]">
+                              Mastery:
+                            </span>
+                            <span className="font-mono text-xs font-bold text-[var(--text-primary)]">
+                              {pVal}%
+                            </span>
+                          </div>
+
+                          <button className="px-3 py-1 rounded-full bg-[var(--bg-surface-high)] group-hover:bg-[var(--text-primary)] group-hover:text-[var(--text-on-primary)] font-mono text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1 transition-all">
+                            <span>Open Lesson</span>
+                            <ChevronRight className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

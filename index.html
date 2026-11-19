@@ -1,17 +1,2337 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/jpeg" href="/src/assets/airavata-logo.jpg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AIRAVATA</title>
-    <!-- Premium Fonts: Cinzel (Majestic Imperial Display), Plus Jakarta Sans (Modern Matte UI), JetBrains Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Cinzel+Decorative:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIRAVATA | Adaptive Coding Tutor</title>
+
+  <!-- Google Fonts: Inter & Space Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- Retro dot-matrix display font via OnlineWebFonts CDN -->
+  <link href="https://db.onlinewebfonts.com/c/8cb707a9b8a73f8a7403336b861c3074?family=BubbledotICG-FinePos" rel="stylesheet">
+
+  <!-- Font Awesome 6.5.2 from cdnjs -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+  <style>
+    @font-face {
+      font-family: "Geist Pixel Circle";
+      src: local("Geist Pixel Circle"), local("GeistPixelCircle"), monospace;
+      font-weight: 400;
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #000000;
+      --text: #ffffff;
+      --muted: #8e8e8e;
+      --nav-text: #2e2e2e;
+      --pill-dark: #28282a;
+      --sign-in-text: #c8c8c8;
+      --nav-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+      --trust-bg: #28282a;
+      --trust-border: rgba(255, 255, 255, 0.4);
+      --trust-text: #c4c2c3;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-display: "BubbledotICG-FinePos", "Geist Pixel Circle", "Space Mono", monospace;
+      --font-mono: "Space Mono", "JetBrains Mono", monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* =========================================================================
+       PART A: SINGLE-VIEWPORT LANDING PAGE
+       ========================================================================= */
+    #landingSection {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: clamp(14px, 2.2vh, 26px) clamp(14px, 3vw, 32px);
+      z-index: 1;
+    }
+
+    /* Full-viewport Background Video Container */
+    .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000000;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .bg-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Ambient Video Overlay Gradient */
+    .bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.7) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Landing UI Shell (z-index 2) */
+    .landing-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Entrance Animations */
+    @keyframes slideDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-18px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        transform: translateY(22px) scale(0.98);
+        filter: blur(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes revealPulse {
+      0% {
+        opacity: 0;
+        transform: translateY(22px) scale(0.96);
+        filter: blur(6px);
+      }
+      70% {
+        transform: translateY(0) scale(1.02);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes headlineFade {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .anim {
+      animation: reveal 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-delay: var(--d, 0s);
+      opacity: 0;
+    }
+
+    /* 1) Header Region */
+    .header {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(14px, 2.6vw, 24px);
+      flex-shrink: 0;
+      animation: slideDown 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+      z-index: 10;
+    }
+
+    .logo-btn {
+      width: clamp(40px, 4.4vw, 46px);
+      height: clamp(40px, 4.4vw, 46px);
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: var(--nav-shadow);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .logo-btn:hover {
+      transform: scale(1.04);
+    }
+
+    .logo-icon {
+      width: 72%;
+      height: 72%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* White Nav Pill */
+    .nav-pill {
+      background: #ffffff;
+      height: clamp(44px, 5.2vw, 48px);
+      max-width: 430px;
+      flex: 1;
+      padding: 4px 10px;
+      border-radius: 999px;
+      box-shadow: var(--nav-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      list-style: none;
+    }
+
+    .nav-link {
+      position: relative;
+      font-size: clamp(13px, 1.4vw, 15px);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--nav-text);
+      text-decoration: none;
+      opacity: 0.5;
+      padding: 6px 10px;
+      transition: opacity 0.2s ease;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .nav-link:hover {
+      opacity: 0.75;
+    }
+
+    .nav-link.active {
+      opacity: 1;
+    }
+
+    .nav-link.active::after {
+      content: "";
+      position: absolute;
+      bottom: 5px;
+      left: 50%;
+      width: 3px;
+      height: 3px;
+      background: #000000;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: -5px 0 0 #000000, 5px 0 0 #000000;
+    }
+
+    /* Dark Sign in Pill */
+    .sign-in-btn {
+      background: var(--pill-dark);
+      color: var(--sign-in-text);
+      height: clamp(40px, 4.6vw, 44px);
+      padding: 0 clamp(16px, 2.2vw, 22px);
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(13px, 1.4vw, 14.5px);
+      font-weight: 500;
+      text-decoration: none;
+      box-shadow: var(--nav-shadow);
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .sign-in-btn:hover {
+      background: #323234;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    /* Mobile Hamburger */
+    .burger-btn {
+      display: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--pill-dark);
+      border: none;
+      cursor: pointer;
+      box-shadow: var(--nav-shadow);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 0;
+      z-index: 95;
+      transition: background 0.25s ease;
+    }
+
+    .burger-bar {
+      width: 18px;
+      height: 1.8px;
+      background: #ffffff;
+      border-radius: 1px;
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease, background 0.2s ease;
+    }
+
+    /* 2) Hero Section */
+    .hero {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin: auto 0;
+      padding: clamp(6px, 1.5vh, 18px) 0;
+    }
+
+    /* Badge Row */
+    .trust-row {
+      --trust-size: clamp(34px, 4.2vw, 40px);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: clamp(10px, 1.8vh, 18px);
+    }
+
+    .avatar-ring {
+      width: var(--trust-size);
+      height: var(--trust-size);
+      border-radius: 50%;
+      background: var(--trust-bg);
+      border: 1px solid var(--trust-border);
+      padding: 4px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .avatar-ring .inner-circle {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #ffffff;
+      display: grid;
+      place-items: center;
+      color: #000000;
+      font-size: calc(var(--trust-size) * 0.44);
+    }
+
+    .avatar-ring:nth-child(1) { z-index: 1; }
+    .avatar-ring:nth-child(2) { z-index: 2; margin-left: calc(var(--trust-size) * -0.42); }
+    .avatar-ring:nth-child(3) { z-index: 4; margin-left: calc(var(--trust-size) * -0.42); }
+
+    .avatar-ring:hover {
+      transform: translateY(-2px);
+    }
+
+    .trust-pill {
+      height: var(--trust-size);
+      background: var(--trust-bg);
+      border: 1px solid var(--trust-border);
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      margin-left: calc(var(--trust-size) * -0.42);
+      padding-left: calc(var(--trust-size) * 0.58);
+      padding-right: calc(var(--trust-size) * 0.45);
+      z-index: 3;
+    }
+
+    .trust-pill span {
+      font-size: clamp(11.5px, 1.3vw, 13px);
+      font-weight: 500;
+      color: var(--trust-text);
+      white-space: nowrap;
+    }
+
+    /* Headline: Solid White, Retro Dot-Matrix, Single Line */
+    .headline {
+      font-family: var(--font-display);
+      color: #ffffff;
+      font-size: clamp(36px, 9vw, 120px);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      text-transform: uppercase;
+      white-space: nowrap;
+      user-select: none;
+      animation: headlineFade 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .headline-subtitle {
+      font-family: var(--font-display);
+      color: var(--trust-text);
+      font-size: clamp(12px, 1.6vw, 18px);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-top: 4px;
+      opacity: 0.85;
+      user-select: none;
+    }
+
+    /* Subhead */
+    .subhead {
+      max-width: min(500px, 92%);
+      margin-top: clamp(12px, 1.8vh, 20px);
+      font-size: clamp(13px, 1.4vw, 15px);
+      line-height: 1.55;
+      font-weight: 400;
+      color: #d0d0d0;
+      opacity: 0.8;
+    }
+
+    /* CTA Button: White Pill, Black Text, Inter 600, Soft White Glow */
+    .cta-btn {
+      margin-top: clamp(18px, 2.6vh, 28px);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #ffffff;
+      color: #000000;
+      font-family: var(--font-sans);
+      font-size: clamp(13.5px, 1.4vw, 15px);
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 999px;
+      padding: clamp(11px, 1.6vh, 13px) clamp(24px, 3.2vw, 32px);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 0 20px rgba(255, 255, 255, 0.35);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      cursor: pointer;
+      border: none;
+      animation: revealPulse 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-delay: var(--d, 0.4s);
+      opacity: 0;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25), 0 0 28px rgba(255, 255, 255, 0.5);
+    }
+
+    /* 3) Stats Footer */
+    .stats-footer {
+      width: 100%;
+      max-width: 920px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(12px, 2.2vw, 32px);
+      flex-shrink: 0;
+      padding-top: clamp(8px, 1.5vh, 16px);
+      z-index: 10;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: clamp(8px, 1.2vw, 14px);
+    }
+
+    .stat-icon {
+      font-family: var(--font-display);
+      font-size: clamp(20px, 2.8vw, 30px);
+      color: #ffffff;
+      line-height: 1;
+      width: clamp(24px, 3vw, 32px);
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .stat-body {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .stat-val-wrap {
+      font-size: clamp(18px, 2.2vw, 26px);
+      font-weight: 500;
+      color: #ffffff;
+      letter-spacing: -0.025em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.15;
+    }
+
+    .stat-label {
+      font-size: clamp(10.5px, 1.1vw, 12px);
+      color: var(--muted);
+      line-height: 1.3;
+      margin-top: 2px;
+    }
+
+    /* Mobile Sheet Menu */
+    .mobile-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 80;
+      opacity: 0;
+      transition: opacity 0.28s ease;
+    }
+
+    .mobile-menu-sheet {
+      display: none;
+      position: fixed;
+      top: 80px;
+      left: 18px;
+      right: 18px;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 22px 18px 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      z-index: 90;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      transform: translateY(-16px);
+      opacity: 0;
+      transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.38s ease;
+    }
+
+    body.menu-open .mobile-overlay {
+      display: block;
+      opacity: 1;
+    }
+
+    body.menu-open .mobile-menu-sheet {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    body.menu-open .burger-btn {
+      background: #ffffff;
+    }
+
+    body.menu-open .burger-bar:nth-child(1) {
+      background: #000000;
+      transform: translateY(6.5px) rotate(45deg);
+    }
+
+    body.menu-open .burger-bar:nth-child(2) {
+      opacity: 0;
+    }
+
+    body.menu-open .burger-bar:nth-child(3) {
+      background: #000000;
+      transform: translateY(-6.5px) rotate(-45deg);
+    }
+
+    .mobile-nav-link {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--nav-text);
+      text-decoration: none;
+      padding: 10px 0;
+      width: 100%;
+      text-align: center;
+    }
+
+    .mobile-sign-in {
+      width: 100%;
+      background: var(--pill-dark);
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 14px 0;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 15px;
+      margin-top: 6px;
+    }
+
+    /* Responsive Breakpoints for Landing */
+    @media (max-width: 720px) {
+      .header {
+        justify-content: space-between;
+        max-width: 100%;
+      }
+      .nav-pill, .sign-in-btn {
+        display: none;
+      }
+      .burger-btn {
+        display: flex;
+      }
+      .headline {
+        letter-spacing: -0.05em;
+        line-height: 1.05;
+      }
+      .stats-footer {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px 18px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .anim, .headline, .cta-btn, .header {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+      }
+    }
+
+    /* =========================================================================
+       PART B: DASHBOARD ("CHOOSE YOUR LANGUAGE & LEARNING PATH")
+       ========================================================================= */
+    #dashboardSection {
+      display: none; /* revealed upon clicking Start Learning or Nav Languages */
+      width: 100%;
+      min-height: 100vh;
+      background-color: #0e0e0e;
+      color: #e2e2e2;
+      position: relative;
+      z-index: 20;
+    }
+
+    #dashboardSection.active {
+      display: block;
+    }
+
+    .dashboard-topbar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 72px;
+      background: rgba(14, 14, 14, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid #28282a;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(16px, 3.5vw, 48px);
+    }
+
+    .dash-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .dash-brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #ffffff;
+      color: #000000;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+    }
+
+    .dash-brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dash-brand-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.05em;
+    }
+
+    .dash-brand-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+    }
+
+    .dash-nav-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #1b1b1b;
+      padding: 4px;
+      border-radius: 999px;
+      border: 1px solid #28282a;
+    }
+
+    .dash-tab {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #c4c7c8;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .dash-tab:hover {
+      color: #ffffff;
+      background: #2a2a2a;
+    }
+
+    .dash-tab.active {
+      background: #ffffff;
+      color: #000000;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+    }
+
+    .dash-user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #1b1b1b;
+      border: 1px solid #28282a;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #c4c7c8;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 0 8px #ffffff;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* Dashboard Main Container */
+    .dashboard-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: clamp(20px, 3.5vw, 40px) clamp(16px, 3vw, 40px) 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    /* Header & Streak Panel */
+    .dash-header-row {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    @media (min-width: 992px) {
+      .dash-header-row {
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+      }
+    }
+
+    .dash-title-group h1 {
+      font-family: var(--font-display);
+      font-size: clamp(26px, 3.8vw, 44px);
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      line-height: 1.15;
+    }
+
+    .dash-title-group p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 8px;
+      max-width: 620px;
+      line-height: 1.6;
+    }
+
+    .streak-card {
+      background: #1b1b1b;
+      border: 1px solid #28282a;
+      border-radius: 14px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .streak-num {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .streak-meta {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .streak-meta span:first-child {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .streak-meta span:last-child {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    /* "Continue Where You Left Off" Card */
+    .resume-card {
+      position: relative;
+      background: #1b1b1b;
+      border: 1px solid #28282a;
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+    }
+
+    @media (min-width: 900px) {
+      .resume-card {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .resume-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .resume-icon-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: #2a2a2a;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .resume-details {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .resume-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge-pill {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #2a2a2a;
+      color: #ffffff;
+    }
+
+    .badge-pill.remediation {
+      background: rgba(255, 180, 171, 0.15);
+      color: #ffb4ab;
+      border: 1px solid rgba(255, 180, 171, 0.3);
+    }
+
+    .resume-details h2 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .resume-details p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .resume-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .mastery-gauge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .gauge-svg {
+      width: 52px;
+      height: 52px;
+      transform: rotate(-90deg);
+    }
+
+    .gauge-circle-bg {
+      fill: none;
+      stroke: #2a2a2a;
+      stroke-width: 4;
+    }
+
+    .gauge-circle-val {
+      fill: none;
+      stroke: #ffffff;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-dasharray: 125.6;
+      stroke-dashoffset: 36.4; /* 71% */
+    }
+
+    .gauge-text {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .resume-btn {
+      padding: 10px 24px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #000000;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      box-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
+    }
+
+    .resume-btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 24px rgba(255, 255, 255, 0.35);
+    }
+
+    /* Filter Chips & Search Bar */
+    .filter-row {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      justify-content: space-between;
+    }
+
+    @media (min-width: 900px) {
+      .filter-row {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+
+    .filter-chips {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #1b1b1b;
+      padding: 4px;
+      border-radius: 999px;
+      border: 1px solid #28282a;
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
+    .filter-chip {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      color: #c4c7c8;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .filter-chip:hover {
+      color: #ffffff;
+      background: #2a2a2a;
+    }
+
+    .filter-chip.active {
+      background: #ffffff;
+      color: #000000;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #1b1b1b;
+      border: 1px solid #28282a;
+      border-radius: 999px;
+      padding: 8px 18px;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .search-box input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      width: 100%;
+      text-transform: uppercase;
+    }
+
+    .search-box input::placeholder {
+      color: var(--muted);
+    }
+
+    /* Language Cards Grid (4 across on desktop, 1 on mobile) */
+    .languages-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 640px) {
+      .languages-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .languages-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 1280px) {
+      .languages-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .lang-card {
+      background: #1b1b1b;
+      border: 1px solid #28282a;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .lang-card:hover {
+      background: #1f1f1f;
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-top {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-tag-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+
+    .status-tag {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #2a2a2a;
+      color: #c4c7c8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .status-tag.active {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .status-tag.challenge {
+      background: rgba(114, 9, 183, 0.2);
+      color: #c77dff;
+      border: 1px solid rgba(114, 9, 183, 0.4);
+    }
+
+    .status-tag.mastered {
+      background: rgba(80, 255, 219, 0.15);
+      color: #80ffdb;
+      border: 1px solid rgba(80, 255, 219, 0.3);
+    }
+
+    .status-tag.prereq {
+      background: rgba(255, 180, 171, 0.1);
+      color: #ffb4ab;
+    }
+
+    .card-header-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #2a2a2a;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .card-title h3 {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .card-title span {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .card-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #28282a;
+    }
+
+    .progress-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 4px;
+      border-radius: 999px;
+      background: #2a2a2a;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: #ffffff;
+      border-radius: 999px;
+    }
+
+    .card-action-link {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #ffffff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: color 0.2s ease;
+      cursor: pointer;
+    }
+
+    .card-action-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Section "HOW AIRAVATA ADAPTS TO YOU" */
+    .adaptation-section {
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .adaptation-header span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .adaptation-header h2 {
+      font-family: var(--font-display);
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .adaptation-header p {
+      font-size: 13px;
+      color: var(--muted);
+      max-width: 600px;
+      margin-top: 6px;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .steps-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .step-card {
+      background: #1b1b1b;
+      border: 1px solid #28282a;
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .step-top {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .step-num-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .step-num {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      opacity: 0.3;
+    }
+
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .step-desc {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .step-footer-box {
+      background: #0e0e0e;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* Dashboard Footer */
+    .dashboard-footer {
+      width: 100%;
+      border-top: 1px solid #28282a;
+      padding: 24px clamp(16px, 3.5vw, 48px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    @media (min-width: 768px) {
+      .dashboard-footer {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .foot-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .foot-left strong {
+      font-family: var(--font-display);
+      color: #ffffff;
+      font-size: 14px;
+    }
+
+    .foot-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .foot-right a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .foot-right a:hover {
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================================
+       PART A: SINGLE-VIEWPORT LANDING PAGE
+       ========================================================================= -->
+  <section id="landingSection">
+    <!-- Full-viewport cover video -->
+    <div class="bg">
+      <video class="bg-video" autoplay muted loop playsinline>
+        <source src="/bg-video.mp4" type="video/mp4">
+        <source src="/hf_20260809_012548_ef22562c-c0ae-4816-ad9d-f8922af4e6a7.mp4" type="video/mp4">
+        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260809_012548_ef22562c-c0ae-4816-ad9d-f8922af4e6a7.mp4" type="video/mp4">
+      </video>
+      <div class="bg-overlay"></div>
+    </div>
+
+    <!-- UI Overlay (z-index 2) -->
+    <div class="landing-content">
+      <!-- 1) Header Row -->
+      <header class="header">
+        <button class="logo-btn" id="homeLogoBtn" aria-label="AIRAVATA Home">
+          <div class="logo-icon">
+            <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 4L33 11.5V26.5L19 34L5 26.5V11.5L19 4Z" stroke="#000000" stroke-width="2.5" stroke-linejoin="round"/>
+              <circle cx="19" cy="19" r="4.5" fill="#000000"/>
+              <line x1="19" y1="4" x2="19" y2="14.5" stroke="#000000" stroke-width="2"/>
+              <line x1="19" y1="23.5" x2="19" y2="34" stroke="#000000" stroke-width="2"/>
+              <line x1="5" y1="11.5" x2="14.5" y2="19" stroke="#000000" stroke-width="2"/>
+              <line x1="23.5" y1="19" x2="33" y2="26.5" stroke="#000000" stroke-width="2"/>
+            </svg>
+          </div>
+        </button>
+
+        <nav class="nav-pill" aria-label="Main Navigation">
+          <a class="nav-link active" data-target="home">Home</a>
+          <a class="nav-link" data-target="languages">Languages</a>
+          <a class="nav-link" data-target="how-it-works">How It Works</a>
+          <a class="nav-link" data-target="about">About</a>
+        </nav>
+
+        <a class="sign-in-btn" id="signInBtn">Sign in</a>
+
+        <!-- Mobile Hamburger Button -->
+        <button class="burger-btn" id="burgerBtn" aria-label="Toggle navigation menu" aria-expanded="false">
+          <span class="burger-bar"></span>
+          <span class="burger-bar"></span>
+          <span class="burger-bar"></span>
+        </button>
+      </header>
+
+      <!-- Mobile Sheet Menu & Overlay -->
+      <div class="mobile-overlay" id="mobileOverlay"></div>
+      <div class="mobile-menu-sheet" id="mobileSheet">
+        <a class="mobile-nav-link active" data-target="home">Home</a>
+        <a class="mobile-nav-link" data-target="languages">Languages</a>
+        <a class="mobile-nav-link" data-target="how-it-works">How It Works</a>
+        <a class="mobile-nav-link" data-target="about">About</a>
+        <a class="mobile-sign-in" id="mobileSignIn">Sign in</a>
+      </div>
+
+      <!-- 2) Hero Section -->
+      <main class="hero">
+        <!-- Badge row -->
+        <div class="trust-row anim" style="--d: 0.05s;">
+          <div class="avatar-ring">
+            <div class="inner-circle">
+              <i class="fa-brands fa-python"></i>
+            </div>
+          </div>
+          <div class="avatar-ring">
+            <div class="inner-circle">
+              <i class="fa-brands fa-js"></i>
+            </div>
+          </div>
+          <div class="avatar-ring">
+            <div class="inner-circle">
+              <i class="fa-brands fa-react"></i>
+            </div>
+          </div>
+          <div class="trust-pill">
+            <span>16 languages · Live code · Adaptive paths</span>
+          </div>
+        </div>
+
+        <!-- Headline: Solid White, Dot-Matrix Font, Single Line -->
+        <h1 class="headline">
+          AIRAVATA
+        </h1>
+        <div class="headline-subtitle">
+          The Adaptive Coding Tutor
+        </div>
+
+        <!-- Subhead -->
+        <p class="subhead anim" style="--d: 0.28s;">
+          Write real code in 16 languages. AIRAVATA reads how you think and changes its teaching, your path and your difficulty with every answer.
+        </p>
+
+        <!-- CTA: White Pill Button -->
+        <button class="cta-btn" id="startLearningBtn" style="--d: 0.4s;">
+          <span>Start Learning</span>
+          <i class="fa-solid fa-arrow-right" style="font-size: 13px;"></i>
+        </button>
+      </main>
+
+      <!-- 3) Stats Footer -->
+      <footer class="stats-footer">
+        <!-- Stat 1: < 16 Languages -->
+        <div class="stat-item anim" style="--d: 0.5s;">
+          <div class="stat-icon">&lt;</div>
+          <div class="stat-body">
+            <div class="stat-val-wrap">
+              <span class="stat-count" data-target="16" data-decimals="0">0</span>
+            </div>
+            <div class="stat-label">Languages</div>
+          </div>
+        </div>
+
+        <!-- Stat 2: % 4 Step Teaching Ladder -->
+        <div class="stat-item anim" style="--d: 0.58s;">
+          <div class="stat-icon">%</div>
+          <div class="stat-body">
+            <div class="stat-val-wrap">
+              <span class="stat-count" data-target="4" data-decimals="0">0</span>
+            </div>
+            <div class="stat-label">Step Teaching Ladder (hint, trace, analogy, answer)</div>
+          </div>
+        </div>
+
+        <!-- Stat 3: * 2 Adaptive Learning Paths -->
+        <div class="stat-item anim" style="--d: 0.66s;">
+          <div class="stat-icon">*</div>
+          <div class="stat-body">
+            <div class="stat-val-wrap">
+              <span class="stat-count" data-target="2" data-decimals="0">0</span>
+            </div>
+            <div class="stat-label">Adaptive Learning Paths</div>
+          </div>
+        </div>
+
+        <!-- Stat 4: # 4 Mastery Stages per Topic -->
+        <div class="stat-item anim" style="--d: 0.74s;">
+          <div class="stat-icon">#</div>
+          <div class="stat-body">
+            <div class="stat-val-wrap">
+              <span class="stat-count" data-target="4" data-decimals="0">0</span>
+            </div>
+            <div class="stat-label">Mastery Stages per Topic</div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </section>
+
+
+  <!-- =========================================================================
+       PART B: DASHBOARD ("CHOOSE YOUR LANGUAGE & LEARNING PATH")
+       ========================================================================= -->
+  <section id="dashboardSection">
+    <!-- 1. Top Bar -->
+    <header class="dashboard-topbar">
+      <div class="dash-brand" id="dashBrandBtn">
+        <div class="dash-brand-icon">
+          <i class="fa-solid fa-code"></i>
+        </div>
+        <div class="dash-brand-text">
+          <span class="dash-brand-title">AIRAVATA</span>
+          <span class="dash-brand-tag">ADAPTIVE // OS</span>
+        </div>
+      </div>
+
+      <nav class="dash-nav-pill">
+        <span class="dash-tab active" data-tab="library">Library</span>
+        <span class="dash-tab" data-tab="topics">Topics</span>
+        <span class="dash-tab" data-tab="diagnostic">Diagnostic</span>
+        <span class="dash-tab" data-tab="workspace">Workspace</span>
+        <span class="dash-tab" data-tab="concept-card">Concept Card</span>
+        <span class="dash-tab" data-tab="summary">Summary</span>
+      </nav>
+
+      <div class="dash-user-chip">
+        <span class="pulse-dot"></span>
+        <span>Alex • Py 3.12 [SAMPLE]</span>
+      </div>
+    </header>
+
+    <div class="dashboard-content">
+      <!-- 2. Title & Learning Streak Panel -->
+      <div class="dash-header-row">
+        <div class="dash-title-group">
+          <h1>Choose Your Language &amp; Learning Path</h1>
+          <p>
+            Mastery-based coding education that adapts to how you learn. Write real code in sandbox environments, isolate misconceptions, and advance through algorithmic mastery.
+          </p>
+        </div>
+
+        <!-- Right Learning Streak Panel -->
+        <div class="streak-card">
+          <div class="streak-num">5</div>
+          <div class="streak-meta">
+            <span>Habit Interval [SAMPLE]</span>
+            <span>Day Learning Streak Active</span>
+          </div>
+          <i class="fa-solid fa-fire text-amber-400" style="color: #ffb703; font-size: 20px;"></i>
+        </div>
+      </div>
+
+      <!-- 3. "Continue Where You Left Off" Card -->
+      <div class="resume-card">
+        <div class="resume-left">
+          <div class="resume-icon-box">
+            <i class="fa-brands fa-python"></i>
+          </div>
+          <div class="resume-details">
+            <div class="resume-badges">
+              <span class="badge-pill">ACTIVE SESSION</span>
+              <span class="badge-pill remediation">REMEDIATION PATH</span>
+              <span style="font-family: var(--font-mono); font-size: 10px; color: var(--muted);">CYCLE #0934 [SAMPLE]</span>
+            </div>
+            <h2>Python 3.12 &gt; Loops &amp; Iteration</h2>
+            <p>Active Module: Comprehensions, Generator Expressions &amp; Range Half-Open Intervals.</p>
+          </div>
+        </div>
+
+        <div class="resume-right">
+          <div class="mastery-gauge">
+            <svg class="gauge-svg" viewBox="0 0 48 48">
+              <circle class="gauge-circle-bg" cx="24" cy="24" r="20"></circle>
+              <circle class="gauge-circle-val" cx="24" cy="24" r="20"></circle>
+            </svg>
+            <div class="gauge-text">71%</div>
+          </div>
+          <button class="resume-btn" onclick="alert('Continuing Python 3.12 Loops & Iteration diagnostic!')">
+            <span>Continue Learning</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. Filter Chips & Search Field -->
+      <div class="filter-row">
+        <div class="filter-chips" id="filterChips">
+          <button class="filter-chip active" data-filter="all">All Tracks (16)</button>
+          <button class="filter-chip" data-filter="prog">Programming Languages (7)</button>
+          <button class="filter-chip" data-filter="web">Web &amp; Frontend (3)</button>
+          <button class="filter-chip" data-filter="sys">Systems &amp; Scripting (3)</button>
+          <button class="filter-chip" data-filter="data">Data &amp; Math (3)</button>
+        </div>
+
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass" style="color: var(--muted); font-size: 12px;"></i>
+          <input type="text" id="trackSearchInput" placeholder="FILTER CODEX...">
+        </div>
+      </div>
+
+      <!-- 5. 16 Language Cards Grid -->
+      <div class="languages-grid" id="languagesGrid">
+        <!-- 1. Python -->
+        <div class="lang-card" data-category="prog" data-title="python">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag active">Active Unit 3</span>
+              <span style="color: #ffffff;"><span class="pulse-dot" style="display:inline-block; margin-right:4px;"></span>Learning</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-brands fa-python"></i></div>
+              <div class="card-title">
+                <h3>Python 3.12</h3>
+                <span>General • AI • Systems</span>
+              </div>
+            </div>
+            <p class="card-desc">AST compilation, functional generators, and asynchronous execution models.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 5 / 12 TOPICS</span>
+              <span style="color: #ffffff; font-weight: 700;">42%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 42%;"></div></div>
+            <a class="card-action-link"><span>Continue Unit 3</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 2. JavaScript -->
+        <div class="lang-card" data-category="web prog" data-title="javascript js">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag">Available</span>
+              <span>ECMA 2024</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-brands fa-js"></i></div>
+              <div class="card-title">
+                <h3>JavaScript V8</h3>
+                <span>Web • Event Loop • Node</span>
+              </div>
+            </div>
+            <p class="card-desc">Prototype chains, microtask queues, execution contexts, and memory allocation.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 1 / 12 TOPICS</span>
+              <span>8%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 8%;"></div></div>
+            <a class="card-action-link"><span>Start Diagnostic</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 3. React -->
+        <div class="lang-card" data-category="web" data-title="react">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag">Available</span>
+              <span>Framework</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-brands fa-react"></i></div>
+              <div class="card-title">
+                <h3>React 19 &amp; RSC</h3>
+                <span>Fiber • Hooks • SSR</span>
+              </div>
+            </div>
+            <p class="card-desc">Concurrent Fiber reconciler, compiler invariants, server actions, and mutation lifecycles.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 0 / 10 TOPICS</span>
+              <span>0%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+            <a class="card-action-link"><span>Initialize Pre-test</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 4. HTML & CSS -->
+        <div class="lang-card" data-category="web" data-title="html css">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag mastered">Mastered</span>
+              <span style="color: #80ffdb;"><i class="fa-solid fa-check"></i> 8 / 8 Done</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-brands fa-html5"></i></div>
+              <div class="card-title">
+                <h3>HTML &amp; CSS Layout</h3>
+                <span>Box Model • Grid • A11y</span>
+              </div>
+            </div>
+            <p class="card-desc">Sub-pixel rendering engines, CSS subgrid, accessibility trees, and responsive flow.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: COMPLETE</span>
+              <span style="color: #ffffff; font-weight: 700;">100%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 100%;"></div></div>
+            <a class="card-action-link"><span>Review Sandbox</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 5. ANSI SQL -->
+        <div class="lang-card" data-category="data" data-title="sql">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag challenge">Challenge Active</span>
+              <span style="color: #c77dff;">Hard Route</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-solid fa-database"></i></div>
+              <div class="card-title">
+                <h3>ANSI SQL</h3>
+                <span>Relational Algebra • Windowing</span>
+              </div>
+            </div>
+            <p class="card-desc">Execution plans, index scan heuristics, recursive CTEs, and aggregation pipelines.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 5 / 7 TOPICS</span>
+              <span style="color: #ffffff; font-weight: 700;">71%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 71%;"></div></div>
+            <a class="card-action-link"><span>Continue Windowing</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 6. MySQL -->
+        <div class="lang-card" data-category="data" data-title="mysql">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag">Available</span>
+              <span>Storage Engine</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-solid fa-server"></i></div>
+              <div class="card-title">
+                <h3>MySQL 8 Architecture</h3>
+                <span>InnoDB • ACID • Locking</span>
+              </div>
+            </div>
+            <p class="card-desc">InnoDB buffer pool internal structures, redo/undo logging, and transaction isolation levels.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 0 / 6 TOPICS</span>
+              <span>0%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+            <a class="card-action-link"><span>Start Diagnostic</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 7. Bash -->
+        <div class="lang-card" data-category="sys" data-title="bash shell posix">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag active">Active</span>
+              <span>Shell POSIX</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-solid fa-terminal"></i></div>
+              <div class="card-title">
+                <h3>Bash &amp; POSIX Shell</h3>
+                <span>Pipelines • Signals • IPC</span>
+              </div>
+            </div>
+            <p class="card-desc">File descriptor multiplexing, subshell dynamics, trap interceptors, and non-blocking IPC.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 2 / 6 TOPICS</span>
+              <span style="color: #ffffff; font-weight: 700;">33%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 33%;"></div></div>
+            <a class="card-action-link"><span>Continue Unit 2</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 8. Rust -->
+        <div class="lang-card" data-category="prog sys" data-title="rust">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag prereq">Prerequisite Needed</span>
+              <span>Systems</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-brands fa-rust"></i></div>
+              <div class="card-title">
+                <h3>Rust 2024</h3>
+                <span>Borrow Checker • Zero-Cost</span>
+              </div>
+            </div>
+            <p class="card-desc">Ownership semantics, lifetime annotative analysis, fearless concurrency, and unsafe FFI bridges.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 0 / 16 TOPICS</span>
+              <span>0%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+            <a class="card-action-link"><span>View Prerequisites</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 9. C / C++ -->
+        <div class="lang-card" data-category="prog sys" data-title="c cpp c++">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag">Available</span>
+              <span>Hardware Layer</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-solid fa-microchip"></i></div>
+              <div class="card-title">
+                <h3>C / C++ 23</h3>
+                <span>Pointers • Cache • ASM</span>
+              </div>
+            </div>
+            <p class="card-desc">Manual heap management, pointer arithmetic, memory alignment, cache lines, and SIMD.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 0 / 15 TOPICS</span>
+              <span>0%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+            <a class="card-action-link"><span>Start Diagnostic</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 10. Go -->
+        <div class="lang-card" data-category="prog sys" data-title="go golang">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag">Available</span>
+              <span>Microservices</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-brands fa-golang"></i></div>
+              <div class="card-title">
+                <h3>Go 1.23</h3>
+                <span>Goroutines • Channels • HTTP</span>
+              </div>
+            </div>
+            <p class="card-desc">CSP concurrency primitives, garbage collection pacing, interface dispatch, and networking.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 0 / 8 TOPICS</span>
+              <span>0%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+            <a class="card-action-link"><span>Explore Track</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 11. NumPy & Pandas -->
+        <div class="lang-card" data-category="data" data-title="numpy pandas data python">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag">Available</span>
+              <span>Data Engine</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+              <div class="card-title">
+                <h3>NumPy &amp; Pandas</h3>
+                <span>Tensors • Vectorization • Arrow</span>
+              </div>
+            </div>
+            <p class="card-desc">N-dimensional broadcasting rules, memory strides, Apache Arrow IPC, and vectorized kernels.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 0 / 11 TOPICS</span>
+              <span>0%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+            <a class="card-action-link"><span>Explore Vectorization</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 12. Java -->
+        <div class="lang-card" data-category="prog" data-title="java">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag">Available</span>
+              <span>Enterprise JVM</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-brands fa-java"></i></div>
+              <div class="card-title">
+                <h3>Java 21 LTS</h3>
+                <span>Virtual Threads • JIT • Memory</span>
+              </div>
+            </div>
+            <p class="card-desc">Project Loom virtual threads, structured concurrency, generational ZGC, and bytecode internals.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 0 / 12 TOPICS</span>
+              <span>0%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+            <a class="card-action-link"><span>Start Diagnostic</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 13. C# -->
+        <div class="lang-card" data-category="prog" data-title="c# csharp dotnet">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag">Available</span>
+              <span>.NET 9</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-solid fa-code"></i></div>
+              <div class="card-title">
+                <h3>C# &amp; .NET 9</h3>
+                <span>Async/Await • CLR • Span&lt;T&gt;</span>
+              </div>
+            </div>
+            <p class="card-desc">Low-allocation programming with Span and Memory, pattern matching, Roslyn source generators.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 0 / 12 TOPICS</span>
+              <span>0%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+            <a class="card-action-link"><span>Start Diagnostic</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 14. Discrete Structures & Mathematics -->
+        <div class="lang-card" data-category="data" data-title="math discrete structures logic">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag">Available</span>
+              <span>Theoretical CS</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-solid fa-square-root-variable"></i></div>
+              <div class="card-title">
+                <h3>Discrete Structures</h3>
+                <span>Graphs • Combinatorics • Logic</span>
+              </div>
+            </div>
+            <p class="card-desc">Propositional calculus, topological graph sorting, recurrence relations, and formal automaton proofs.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>PROGRESS: 0 / 9 TOPICS</span>
+              <span>0%</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+            <a class="card-action-link"><span>Enter Formal Proofs</span><i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- 15. Linear Algebra for AI (Coming Soon) -->
+        <div class="lang-card" data-category="data" data-title="math linear algebra matrix coming soon">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag">Coming Soon</span>
+              <span>Applied Math</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-solid fa-cube"></i></div>
+              <div class="card-title">
+                <h3>Linear Algebra for AI</h3>
+                <span>Eigenvalues • SVD • Tensors</span>
+              </div>
+            </div>
+            <p class="card-desc">Matrix factorizations, spectral decompositions, and geometric vector transformations.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>STATUS: QUEUED</span>
+              <span>Track 2</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+            <a class="card-action-link" style="opacity: 0.6;"><span>Coming soon</span><i class="fa-solid fa-lock"></i></a>
+          </div>
+        </div>
+
+        <!-- 16. Probability & Bayes Modeling (Coming Soon) -->
+        <div class="lang-card" data-category="data" data-title="math probability bayes statistics coming soon">
+          <div class="card-top">
+            <div class="card-tag-row">
+              <span class="status-tag">Coming Soon</span>
+              <span>Cognitive Models</span>
+            </div>
+            <div class="card-header-group">
+              <div class="card-icon"><i class="fa-solid fa-brain"></i></div>
+              <div class="card-title">
+                <h3>Bayesian Modeling</h3>
+                <span>Priors • Likelihood • MCMC</span>
+              </div>
+            </div>
+            <p class="card-desc">Bayesian Knowledge Tracing foundations, belief updates, and Markov decision processes.</p>
+          </div>
+          <div class="card-bottom">
+            <div class="progress-meta">
+              <span>STATUS: QUEUED</span>
+              <span>Track 2</span>
+            </div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+            <a class="card-action-link" style="opacity: 0.6;"><span>Coming soon</span><i class="fa-solid fa-lock"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Section "HOW AIRAVATA ADAPTS TO YOU" -->
+      <section class="adaptation-section">
+        <div class="adaptation-header">
+          <span>PROTOCOL SPECS // REAL-TIME COGNITION</span>
+          <h2>How AIRAVATA Adapts to You</h2>
+          <p>
+            Unlike linear static courses, AIRAVATA continuously recalculates your individual concept frontier to avoid cognitive overload and redundant repetition.
+          </p>
+        </div>
+
+        <div class="steps-grid">
+          <!-- Step 01 -->
+          <div class="step-card">
+            <div class="step-top">
+              <div class="step-num-row">
+                <span class="step-num">01</span>
+                <span class="status-tag">Diagnostic</span>
+              </div>
+              <h3 class="step-title">4-Task Diagnostic</h3>
+              <p class="step-desc">
+                Precision probes analyze syntax familiarity, mental code tracing speed, and edge cases in under three minutes to set your starting path.
+              </p>
+            </div>
+            <div class="step-footer-box">
+              Sets baseline: Remediation vs. Challenge
+            </div>
+          </div>
+
+          <!-- Step 02 -->
+          <div class="step-card">
+            <div class="step-top">
+              <div class="step-num-row">
+                <span class="step-num">02</span>
+                <span class="status-tag">Branching</span>
+              </div>
+              <h3 class="step-title">Dynamic Branching</h3>
+              <p class="step-desc">
+                Moves you between Remediation and Challenge paths and always explains why. Struggling with pointer offsets? Micro-scaffolding activates immediately.
+              </p>
+            </div>
+            <div class="step-footer-box">
+              Sub-paths: Remediation / Speedrun / Deep
+            </div>
+          </div>
+
+          <!-- Step 03 -->
+          <div class="step-card">
+            <div class="step-top">
+              <div class="step-num-row">
+                <span class="step-num">03</span>
+                <span class="status-tag">Escalation</span>
+              </div>
+              <h3 class="step-title">Step-by-Step Escalation</h3>
+              <p class="step-desc">
+                Escalates through hint, step-by-step trace, analogy, then answer, lowering difficulty when needed and verifying retention in the AST sandbox.
+              </p>
+            </div>
+            <div class="step-footer-box">
+              Ladder: Hint → Trace → Analogy → Answer
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 7. Footer -->
+    <footer class="dashboard-footer">
+      <div class="foot-left">
+        <strong>AIRAVATA</strong>
+        <span>Adaptive Coding System • All sample metrics shown</span>
+      </div>
+      <div class="foot-right">
+        <a href="#privacy">Privacy</a>
+        <a href="#terms">Terms</a>
+        <span>v3.4.0 [SAMPLE ENVIRONMENT]</span>
+      </div>
+    </footer>
+  </section>
+
+  <!-- =========================================================================
+       VANILLA JAVASCRIPT: TRANSITIONS, COUNT-UP, SEARCH & FILTERS
+       ========================================================================= -->
+  <script>
+    // Ease-out cubic animation function
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    // Number count-up logic for Part A Stats
+    function animateCounters() {
+      const counters = document.querySelectorAll('.stat-count');
+      counters.forEach((el, index) => {
+        const target = parseFloat(el.getAttribute('data-target'));
+        const decimals = parseInt(el.getAttribute('data-decimals'), 10) || 0;
+        const duration = 1500;
+        const startDelay = 200 + index * 90;
+
+        setTimeout(() => {
+          let startTime = null;
+
+          function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = easeOutCubic(progress);
+            const currentVal = easedProgress * target;
+
+            el.textContent = currentVal.toFixed(decimals);
+
+            if (progress < 1) {
+              requestAnimationFrame(step);
+            } else {
+              el.textContent = target.toFixed(decimals);
+            }
+          }
+
+          requestAnimationFrame(step);
+        }, startDelay);
+      });
+    }
+
+    // IntersectionObserver to trigger counter animation once
+    const statsContainer = document.querySelector('.stats-footer');
+    if (statsContainer) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            animateCounters();
+            observer.disconnect();
+          }
+        });
+      }, { threshold: 0.2 });
+      observer.observe(statsContainer);
+    }
+
+    // View Switching: Part A (Landing) <-> Part B (Dashboard)
+    const landingSection = document.getElementById('landingSection');
+    const dashboardSection = document.getElementById('dashboardSection');
+    const startLearningBtn = document.getElementById('startLearningBtn');
+    const homeLogoBtn = document.getElementById('homeLogoBtn');
+    const dashBrandBtn = document.getElementById('dashBrandBtn');
+
+    function showDashboard() {
+      dashboardSection.classList.add('active');
+      document.body.style.overflow = 'auto';
+      dashboardSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showLanding() {
+      landingSection.scrollIntoView({ behavior: 'smooth' });
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      const homeLink = document.querySelector('.nav-link[data-target="home"]');
+      if (homeLink) homeLink.classList.add('active');
+    }
+
+    if (startLearningBtn) {
+      startLearningBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showDashboard();
+      });
+    }
+
+    if (homeLogoBtn) {
+      homeLogoBtn.addEventListener('click', showLanding);
+    }
+
+    if (dashBrandBtn) {
+      dashBrandBtn.addEventListener('click', showLanding);
+    }
+
+    // Nav Links Handling
+    document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const target = link.getAttribute('data-target');
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll(`.nav-link[data-target="${target}"]`).forEach(l => l.classList.add('active'));
+
+        if (target === 'languages') {
+          showDashboard();
+        } else if (target === 'how-it-works') {
+          showDashboard();
+          setTimeout(() => {
+            document.querySelector('.adaptation-section')?.scrollIntoView({ behavior: 'smooth' });
+          }, 300);
+        } else if (target === 'home') {
+          showLanding();
+        } else {
+          showLanding();
+        }
+      });
+    });
+
+    // Mobile Hamburger Toggle Logic
+    const burgerBtn = document.getElementById('burgerBtn');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+
+    function toggleMenu(open) {
+      const isExpanded = open !== undefined ? open : !document.body.classList.contains('menu-open');
+      document.body.classList.toggle('menu-open', isExpanded);
+      if (burgerBtn) burgerBtn.setAttribute('aria-expanded', String(isExpanded));
+    }
+
+    if (burgerBtn) {
+      burgerBtn.addEventListener('click', () => toggleMenu());
+    }
+
+    if (mobileOverlay) {
+      mobileOverlay.addEventListener('click', () => toggleMenu(false));
+    }
+
+    document.querySelectorAll('.mobile-nav-link, .mobile-sign-in').forEach(link => {
+      link.addEventListener('click', () => toggleMenu(false));
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') toggleMenu(false);
+    });
+
+    // Part B Filtering & Search Logic
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const trackCards = document.querySelectorAll('#languagesGrid .lang-card');
+    const searchInput = document.getElementById('trackSearchInput');
+
+    let currentFilter = 'all';
+
+    function applyFilters() {
+      const query = (searchInput?.value || '').trim().toLowerCase();
+
+      trackCards.forEach(card => {
+        const category = card.getAttribute('data-category') || '';
+        const title = card.getAttribute('data-title') || '';
+        const text = card.textContent.toLowerCase();
+
+        const matchesCat = currentFilter === 'all' || category.includes(currentFilter);
+        const matchesQuery = !query || title.includes(query) || text.includes(query);
+
+        if (matchesCat && matchesQuery) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        filterChips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentFilter = chip.getAttribute('data-filter') || 'all';
+        applyFilters();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', applyFilters);
+    }
+
+    // Keyboard shortcut CMD+K for search
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        showDashboard();
+        setTimeout(() => {
+          searchInput?.focus();
+        }, 300);
+      }
+    });
+
+    // Tab buttons in Dashboard Header
+    document.querySelectorAll('.dash-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+  </script>
+</body>
 </html>

@@ -7,9 +7,11 @@ import {
   AlertCircle,
   Lightbulb,
   ArrowRight,
-  Sprout,
-  Compass,
+  ArrowLeft,
   Code2,
+  Lock,
+  Target,
+  Sparkles,
 } from 'lucide-react';
 import { Topic, Question, QuestionChoice, TopicMasteryRecord } from '../types';
 import { MathRenderer } from './MathRenderer';
@@ -61,14 +63,14 @@ export const AdaptiveQuestionView: React.FC<AdaptiveQuestionViewProps> = ({
 
     let reasonMsg = '';
     if (chosen.isCorrect) {
-      reasonMsg = `Mastery increased to ${Math.min(99, pct + 22)}%. Demonstrated competence on ${topic.title}.`;
-      if (pct >= 65) {
-        confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+      reasonMsg = `Mastery updated to ${Math.min(99, pct + 20)}%. Verified competence on objective.`;
+      if (pct >= 60) {
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
       }
     } else {
       reasonMsg = chosen.misconceptionId
-        ? `Cognitive gap detected: [${chosen.misconceptionId}]. Preserving current difficulty for reinforcement.`
-        : `Answer incorrect. Reviewing core relation rules.`;
+        ? `Cognitive gap detected: [${chosen.misconceptionId}]. Difficulty calibrated.`
+        : `Answer incorrect. Prerequisite relation flagged for reinforcement.`;
     }
 
     setLastFeedback({
@@ -93,222 +95,340 @@ export const AdaptiveQuestionView: React.FC<AdaptiveQuestionViewProps> = ({
     }
   };
 
+  const progressPercent = Math.round(((currentIdx + 1) / questions.length) * 100);
+
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      {/* Top Breadcrumb & Return to Lesson */}
-      <div className="flex items-center justify-between border-b border-[var(--border-main)] pb-3">
-        <button
-          onClick={onBackToLesson}
-          className="text-xs text-[var(--accent-primary)] hover:underline flex items-center gap-1 font-medium"
-        >
-          <span>← Back to {topic.title} Lesson</span>
-        </button>
-        <span className="text-xs font-mono text-[var(--text-muted)]">
-          Question {currentIdx + 1} of {questions.length}
-        </span>
-      </div>
+    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-8 text-left">
+      {/* =========================================================================
+          CALIBRATION TELEMETRY TOP BAR & PROGRESS METER (Matched to Stitch)
+         ========================================================================= */}
+      <section className="w-full flex flex-col gap-3 pb-2 border-b border-[var(--border-main)]">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onBackToLesson}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-surface-high)] hover:bg-[var(--text-primary)] hover:text-[var(--text-on-primary)] text-[var(--text-secondary)] font-mono text-xs transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Lesson</span>
+            </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Assessment Card (8 cols, matching Screen 6 Reference) */}
-        <div className="lg:col-span-8 rounded-2xl border border-[var(--border-main)] bg-[var(--bg-surface)] p-6 sm:p-8 shadow-xs space-y-6">
-          {/* Progress Bar & Header */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-[var(--text-primary)]">
-                Question {currentIdx + 1} of {questions.length}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full border border-[var(--border-main)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] font-mono text-[10px] uppercase">
-                {currentQuestion.difficulty}
+            <div className="px-3 py-1 rounded-full bg-[var(--bg-surface-high)] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+              <span className="font-mono text-xs text-[var(--text-primary)] font-bold uppercase tracking-wider">
+                Calibration Phase
               </span>
             </div>
 
-            {/* Horizontal Progress Bar */}
-            <div className="w-full bg-[var(--border-main)] h-2 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[var(--accent-primary)] rounded-full transition-all duration-300"
-                style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }}
-              />
+            <div className="px-3 py-1 rounded-full bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] flex items-center gap-2">
+              <span className="font-mono text-xs text-[var(--text-primary)] font-bold">
+                0{currentIdx + 1} // 0{questions.length}
+              </span>
+              <span className="font-mono text-[11px] text-[var(--text-muted)] uppercase hidden sm:inline">
+                • Calibrating Baseline Difficulty
+              </span>
             </div>
           </div>
 
-          {/* Question Prompt with KaTeX Math Rendering */}
-          <div className="space-y-2">
-            <span className="text-[11px] font-mono text-[var(--text-muted)] uppercase tracking-wider block">
-              Multiple Choice
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs px-3 py-1 rounded-full bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] text-[var(--text-muted)]">
+              DIFFICULTY: <span className="text-[var(--text-primary)] font-bold uppercase">{currentQuestion.difficulty}</span>
             </span>
-            <div className="text-sm sm:text-base font-semibold text-[var(--text-primary)] leading-relaxed">
-              <MathRenderer content={currentQuestion.prompt} />
+          </div>
+        </div>
+
+        {/* Linear Specular Progress Meter */}
+        <div className="relative w-full h-1.5 bg-[var(--bg-surface-high)] rounded-full overflow-hidden mt-1">
+          <div
+            className="absolute top-0 left-0 h-full bg-[var(--text-primary)] shadow-[0_0_12px_rgba(255,255,255,0.8)] transition-all duration-500 ease-out"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      </section>
+
+      {/* =========================================================================
+          MAIN ASYMMETRIC WORKSPACE (Left: Task, Right: Telemetry & BKT)
+         ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* LEFT COLUMN: Assessment Task (7 cols) */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+          {/* Target Objective Card */}
+          <div className="p-4 bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] rounded-2xl shadow-md flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[var(--bg-surface-high)] flex items-center justify-center text-[var(--text-primary)]">
+                <Target className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-widest">
+                  Diagnostic Target #0{currentIdx + 1}
+                </span>
+                <span className="font-sans text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
+                  {topic.title} Verification
+                </span>
+              </div>
             </div>
+            <span className="font-mono text-xs text-[var(--text-muted)] px-2.5 py-0.5 rounded-full bg-[var(--bg-surface-high)]">
+              WEIGHT: 1.4x
+            </span>
           </div>
 
-          {/* Optional Code Snippet */}
+          {/* Question Prompt Header */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs text-[var(--text-muted)]">
+                EVAL_PROMPT_ID::{topic.id.toUpperCase()}_0{currentIdx + 1}
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-white" />
+            </div>
+
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-[var(--text-primary)] tracking-tight leading-relaxed">
+              <MathRenderer content={currentQuestion.prompt} />
+            </h2>
+
+            <p className="font-sans text-xs text-[var(--text-secondary)]">
+              Evaluate the objective carefully. Identify any conceptual misconception in the distracted options.
+            </p>
+          </div>
+
+          {/* Code Snippet Card (Monochrome Obsidian Well) */}
           {currentQuestion.codeSnippet && (
-            <div className="p-3.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)] font-mono text-xs text-[var(--accent-primary)] overflow-x-auto flex items-start gap-2">
-              <Code2 className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0 mt-0.5" />
-              <pre className="whitespace-pre">{currentQuestion.codeSnippet}</pre>
+            <div className="rounded-2xl bg-[#080809] border border-[var(--border-main)] p-4 shadow-xl relative overflow-hidden space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[var(--border-main)]">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                  <span className="font-mono text-xs text-[var(--text-muted)] ml-2">
+                    diagnostic_eval.py • read-only
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 font-mono text-[11px] text-[var(--text-muted)]">
+                  <Lock className="w-3 h-3" />
+                  <span>RUNTIME ENVIRONMENT</span>
+                </div>
+              </div>
+
+              <div className="font-mono text-xs text-[var(--text-primary)] overflow-x-auto p-2 leading-relaxed">
+                <pre>{currentQuestion.codeSnippet}</pre>
+              </div>
             </div>
           )}
 
-          {/* Answer Choices (A, B, C, D) */}
-          <div className="space-y-2.5">
-            {currentQuestion.choices.map((choice) => {
-              const isSelected = selectedChoiceId === choice.id;
-              let choiceStyle = 'border-[var(--border-main)] bg-[var(--bg-surface)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]';
+          {/* Multiple Choice Options (Option A, B, C, D) */}
+          <div className="space-y-3">
+            <span className="font-mono text-xs text-[var(--text-muted)] uppercase tracking-wider block">
+              Select Evaluated Output Option:
+            </span>
 
-              if (isSubmitted) {
-                if (choice.isCorrect) {
-                  choiceStyle = 'border-emerald-500 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 font-semibold';
-                } else if (isSelected && !choice.isCorrect) {
-                  choiceStyle = 'border-rose-500 bg-rose-500/10 text-rose-800 dark:text-rose-200 font-semibold';
-                } else {
-                  choiceStyle = 'opacity-50 border-[var(--border-subtle)] text-[var(--text-muted)]';
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {currentQuestion.choices.map((choice) => {
+                const isSelected = selectedChoiceId === choice.id;
+
+                let cardStyle =
+                  'bg-[var(--bg-surface-low)] border-[var(--border-subtle)] hover:border-[var(--border-hairline)] text-[var(--text-primary)]';
+
+                if (isSubmitted) {
+                  if (choice.isCorrect) {
+                    cardStyle =
+                      'bg-emerald-950/40 border-emerald-400 text-emerald-200 font-semibold shadow-[0_0_16px_rgba(52,211,153,0.2)]';
+                  } else if (isSelected && !choice.isCorrect) {
+                    cardStyle =
+                      'bg-rose-950/40 border-rose-400 text-rose-200 font-semibold shadow-[0_0_16px_rgba(251,113,133,0.2)]';
+                  } else {
+                    cardStyle =
+                      'bg-[var(--bg-surface-low)] opacity-40 border-[var(--border-subtle)] text-[var(--text-muted)]';
+                  }
+                } else if (isSelected) {
+                  cardStyle =
+                    'bg-[var(--bg-surface-high)] border-white text-white shadow-[0_0_16px_rgba(255,255,255,0.15)] ring-1 ring-white/50';
                 }
-              } else if (isSelected) {
-                choiceStyle = 'border-[var(--accent-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] ring-2 ring-[var(--accent-primary)]/20';
-              }
 
-              return (
-                <button
-                  key={choice.id}
-                  onClick={() => handleSelectChoice(choice)}
-                  disabled={isSubmitted}
-                  className={`w-full p-4 rounded-xl border text-left text-xs sm:text-sm flex items-start gap-3.5 transition-all ${choiceStyle}`}
-                >
-                  <span className="w-5 h-5 rounded-full border border-current flex items-center justify-center flex-shrink-0 text-[10px] font-mono mt-0.5 font-bold">
-                    {choice.id.toUpperCase()}
-                  </span>
-                  <div className="flex-1 leading-relaxed">
-                    <MathRenderer content={choice.text} />
-                  </div>
-                  {isSubmitted && choice.isCorrect && (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                  )}
-                  {isSubmitted && isSelected && !choice.isCorrect && (
-                    <AlertCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
-                  )}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={choice.id}
+                    onClick={() => handleSelectChoice(choice)}
+                    disabled={isSubmitted}
+                    className={`p-4 rounded-xl border text-left flex flex-col justify-between gap-3 transition-all cursor-pointer ${cardStyle}`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-mono text-xs font-bold uppercase tracking-wider">
+                        OPTION [{choice.id.toUpperCase()}]
+                      </span>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                          isSelected ? 'border-white bg-white' : 'border-zinc-600'
+                        }`}
+                      >
+                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-black" />}
+                      </div>
+                    </div>
+
+                    <div className="font-sans text-xs sm:text-sm leading-relaxed">
+                      <MathRenderer content={choice.text} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Hint Accordion (Matching Screen 6 Reference) */}
-          <div className="pt-2">
+          {/* Hint Accordion */}
+          <div>
             {!showHint ? (
               <button
                 onClick={() => setShowHint(true)}
-                className="text-xs text-[var(--accent-amber)] hover:underline flex items-center gap-1.5 font-medium"
+                className="font-mono text-xs text-amber-300 hover:underline inline-flex items-center gap-1.5"
               >
                 <Lightbulb className="w-3.5 h-3.5" />
-                <span>Need a hint?</span>
+                <span>Need an adaptive hint?</span>
               </button>
             ) : (
-              <div className="p-3.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-xs text-amber-900 dark:text-amber-200 space-y-1 animate-fadeIn">
-                <div className="flex items-center gap-1.5 font-bold">
-                  <Lightbulb className="w-4 h-4 text-amber-500" />
-                  <span>Hint</span>
+              <div className="p-4 rounded-xl bg-[var(--bg-surface-low)] border border-amber-400/30 text-xs text-amber-200 space-y-1">
+                <div className="font-mono font-bold flex items-center gap-1.5">
+                  <Lightbulb className="w-4 h-4 text-amber-300" />
+                  <span>Cognitive Hint:</span>
                 </div>
-                <p>{currentQuestion.hint}</p>
+                <p className="font-sans leading-relaxed">{currentQuestion.hint}</p>
               </div>
             )}
           </div>
 
-          {/* Post-submission Feedback Panel */}
+          {/* Feedback & Reasoning Output */}
           {lastFeedback && (
-            <div className="p-4 rounded-xl border border-[var(--border-main)] bg-[var(--bg-secondary)] space-y-2 animate-fadeIn text-xs">
-              <div className="font-bold flex items-center gap-1.5">
+            <div className="p-5 rounded-2xl bg-[var(--bg-surface-low)] border border-[var(--border-main)] space-y-3">
+              <div className="font-mono text-xs font-bold flex items-center gap-2">
                 {lastFeedback.isCorrect ? (
                   <>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span className="text-emerald-700 dark:text-emerald-300">Correct Answer!</span>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span className="text-emerald-300">ANSWER VERIFIED // COMPETENCE DEMONSTRATED</span>
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="w-4 h-4 text-rose-500" />
-                    <span className="text-rose-700 dark:text-rose-300">
+                    <AlertCircle className="w-4 h-4 text-rose-400" />
+                    <span className="text-rose-300">
                       {lastFeedback.choice.misconceptionId
-                        ? `Identified Misconception: [${lastFeedback.choice.misconceptionId}]`
-                        : 'Incorrect Choice'}
+                        ? `MISCONCEPTION IDENTIFIED: [${lastFeedback.choice.misconceptionId}]`
+                        : 'SUBMISSION INCORRECT'}
                     </span>
                   </>
                 )}
               </div>
-              <p className="text-[var(--text-secondary)] leading-relaxed">
+
+              <p className="font-sans text-xs text-[var(--text-secondary)] leading-relaxed">
                 {lastFeedback.choice.explanation}
               </p>
-              <div className="text-[11px] font-mono text-[var(--accent-primary)] pt-1 border-t border-[var(--border-subtle)]">
-                🧠 Reasoner: {lastFeedback.reasoning}
+
+              <div className="font-mono text-[11px] text-[var(--text-muted)] pt-2 border-t border-[var(--border-main)]">
+                🧠 Bayesian Reasoner: {lastFeedback.reasoning}
               </div>
             </div>
           )}
 
-          {/* Action Buttons: Skip & Submit */}
-          <div className="flex items-center justify-between pt-4 border-t border-[var(--border-subtle)]">
+          {/* Action Row */}
+          <div className="flex items-center justify-between pt-4 border-t border-[var(--border-main)]">
             <button
               onClick={handleNext}
-              className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              className="font-mono text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]"
             >
-              Skip question
+              Skip Objective
             </button>
 
             {!isSubmitted ? (
               <button
                 onClick={handleSubmit}
                 disabled={!selectedChoiceId}
-                className="px-6 py-2.5 rounded-xl bg-[var(--accent-primary)] hover:opacity-90 disabled:opacity-40 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-xs"
+                className="px-6 py-2.5 rounded-full bg-[var(--text-primary)] text-[var(--text-on-primary)] font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-40 hover:scale-105 transition-all"
               >
-                <span>Submit Answer</span>
+                <span>Evaluate Submission</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
               <button
                 onClick={handleNext}
-                className="px-6 py-2.5 rounded-xl bg-[var(--accent-primary)] hover:opacity-90 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-xs"
+                className="px-6 py-2.5 rounded-full bg-[var(--text-primary)] text-[var(--text-on-primary)] font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:scale-105 transition-all"
               >
-                <span>{currentIdx < questions.length - 1 ? 'Next Question' : 'Complete Topic'}</span>
+                <span>{currentIdx < questions.length - 1 ? 'Next Objective' : 'Finish Diagnostic'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             )}
           </div>
         </div>
 
-        {/* Right Column: "Adaptive Tutor" Sidebar (Screen 6 Reference Layout!) */}
-        <div className="lg:col-span-4 rounded-2xl border border-[var(--border-main)] bg-[var(--bg-surface)] p-6 shadow-xs space-y-6 sticky top-24">
-          {/* Header */}
-          <div className="flex items-center gap-2.5 border-b border-[var(--border-subtle)] pb-4">
-            <div className="p-2 rounded-xl bg-[var(--bg-secondary)] text-[var(--accent-primary)]">
-              <Brain className="w-5 h-5" />
+        {/* RIGHT COLUMN: Diagnostic Telemetry & BKT Reasoning (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col gap-6 sticky top-28">
+          <section className="w-full rounded-2xl bg-[var(--bg-surface-low)] border border-[var(--border-subtle)] p-6 shadow-xl space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-main)]">
+              <div className="flex items-center gap-2">
+                <Brain className="w-4 h-4 text-cyan-300" />
+                <span className="font-mono text-xs font-bold text-[var(--text-primary)] uppercase">
+                  Telemetry Intelligence
+                </span>
+              </div>
+              <span className="font-mono text-[10px] text-[var(--text-muted)]">BKT-PROBABILITY</span>
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-[var(--text-primary)]">Mastery Intelligence</h3>
-              <p className="text-[11px] text-[var(--text-secondary)]">
-                Tracks answers, isolates misconceptions, and adjusts difficulty in real time.
-              </p>
-            </div>
-          </div>
 
-          {/* Progress Circular Dial / Stat (Matching Screen 6) */}
-          <div className="p-5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-subtle)] text-center space-y-2">
-            <span className="text-[11px] font-mono uppercase text-[var(--text-muted)] block">
-              Your Mastery Progress
-            </span>
-            <div className="text-3xl font-serif font-bold text-[var(--accent-primary)]">
-              {pct}%
-            </div>
-            <p className="text-xs text-[var(--text-secondary)]">
-              {correctCount} / {Math.max(1, totalAnswered)} questions answered correctly
-            </p>
-          </div>
+            {/* Circular Mastery Dial */}
+            <div className="flex flex-col items-center justify-center p-6 rounded-xl bg-[var(--bg-surface-container)] border border-[var(--border-subtle)] space-y-3">
+              <div className="relative w-28 h-28 flex items-center justify-center">
+                <svg className="w-28 h-28 -rotate-90" viewBox="0 0 48 48">
+                  <circle
+                    className="text-zinc-800"
+                    cx="24"
+                    cy="24"
+                    fill="none"
+                    r="20"
+                    stroke="currentColor"
+                    strokeWidth="3.5"
+                  />
+                  <circle
+                    className="text-white"
+                    cx="24"
+                    cy="24"
+                    fill="none"
+                    r="20"
+                    stroke="currentColor"
+                    strokeDasharray="125.6"
+                    strokeDashoffset={125.6 - (125.6 * pct) / 100}
+                    strokeLinecap="round"
+                    strokeWidth="3.5"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center">
+                  <span className="font-display text-2xl font-bold text-[var(--text-primary)]">
+                    {pct}%
+                  </span>
+                  <span className="font-mono text-[9px] text-[var(--text-muted)] uppercase">
+                    P(Mastery)
+                  </span>
+                </div>
+              </div>
 
-          {/* Sage Sprout Motivation Card (Matching Screen 6 Sage Sprout Icon!) */}
-          <div className="p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] flex items-center gap-3">
-            <div className="p-2 rounded-full bg-emerald-500/10 text-emerald-500">
-              <Sprout className="w-5 h-5" />
+              <div className="text-center font-mono text-xs text-[var(--text-secondary)]">
+                {correctCount} / {Math.max(1, totalAnswered)} Verified Correct
+              </div>
             </div>
-            <div className="text-xs">
-              <strong className="text-[var(--text-primary)] block">Keep going!</strong>
-              <span className="text-[var(--text-secondary)]">You're making steady progress on this roadmap.</span>
+
+            {/* Realtime Classification Status */}
+            <div className="space-y-2">
+              <span className="font-mono text-[11px] text-[var(--text-muted)] uppercase block">
+                Adaptive Decision Classifier:
+              </span>
+              <div className="p-3 rounded-xl bg-[var(--bg-surface-high)] font-mono text-xs space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[var(--text-secondary)]">Slip Probability (S):</span>
+                  <span className="text-[var(--text-primary)] font-bold">0.10</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[var(--text-secondary)]">Guess Probability (G):</span>
+                  <span className="text-[var(--text-primary)] font-bold">0.20</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[var(--text-secondary)]">Transition Rate (T):</span>
+                  <span className="text-[var(--text-primary)] font-bold">0.15</span>
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </div>
