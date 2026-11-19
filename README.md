@@ -1,6 +1,6 @@
 # 🎓 AIRAVATA: Adaptive Tutor
 
-**Live demo:** [PASTE YOUR VERCEL LINK HERE]
+**Live demo:** https://adaptive-tutor-rosy.vercel.app
 
 AIRAVATA is an adaptive learning tutor. It checks how a student understands a topic, then changes how it teaches. It started as a 24-hour hackathon project (Track ED-02, The Adaptive Tutor) and is now developed as a personal project. Current subject: [SQL / list the subjects that really work].
 
